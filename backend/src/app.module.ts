@@ -1,15 +1,17 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import databaseConfig from './config/database.config';
-import { Recipe } from './modules/recipe/entities/recipe.entity';
-import { Category } from './modules/category/entities/category.entity';
-import { Ingredient } from './modules/ingredient/entities/ingredient.entity';
-import { User } from './modules/user/entities/user.entity';
-import { UserModule } from './modules/user/user.module'; 
-import { CategoryModule } from './modules/category/category.module';
-import { RecipeModule } from './modules/recipe/recipe.module';
-import { IngredientModule } from './modules/ingredient/ingredient.module';
+import databaseConfig from './common/config/database.config';
+import { CloudinaryProvider } from './common/config/cloudinary.config';
+import { RecipeModule } from './recipe/recipe.module';
+import { CategoryModule } from './category/category.module';
+import { IngredientModule } from './ingredient/ingredient.module';
+import { UserModule } from './user/user.module';
+import { InstructionModule } from './instruction/instruction.module';
+import { ReviewModule } from './review/review.module';
+import { FavoriteModule } from './favorite/favorite.module';
+import { SearchesModule } from './searches/searches.module';
+import { LoginModule } from './login/login.module';
 
 @Module({
   imports: [
@@ -24,14 +26,23 @@ import { IngredientModule } from './modules/ingredient/ingredient.module';
         username: configService.get('database.username'),
         password: configService.get('database.password'),
         database: configService.get('database.database'),
-        entities: [Recipe, Category, Ingredient, User],
-        synchronize: configService.get<boolean>('database.synchronize'),
+        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        synchronize: false, 
+        logging: true,
+        retryAttempts: 3, 
+        retryDelay: 3000, 
       }),
     }),
+    RecipeModule,
     CategoryModule,
     IngredientModule,
-    RecipeModule,
     UserModule,
+    InstructionModule,
+    ReviewModule,
+    FavoriteModule,
+    SearchesModule,
+    LoginModule,
   ],
+  providers: [CloudinaryProvider],
 })
 export class AppModule {}
