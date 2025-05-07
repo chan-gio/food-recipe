@@ -24,6 +24,7 @@
     "shadcn": "^2.4.0-canary.17",
     "slick-carousel": "^1.8.1",
     "styled-components": "^6.1.16"
+
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
@@ -38,6 +39,7 @@
     "postcss": "^8.5.3",
     "sass": "^1.86.1",
     "tailwindcss": "^4.0.17",
+
     "vite": "^6.2.0"
   }
 }

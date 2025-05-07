@@ -3,6 +3,7 @@ import { FaFacebook, FaGoogle } from "react-icons/fa";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
+
 const Login = () => {
   const [isRegistering, setIsRegistering] = useState(false);
   const [email, setEmail] = useState("");
@@ -25,6 +26,7 @@ const Login = () => {
     <div className={styles.container}>
       <AnimatePresence mode="wait">
         <motion.div
+
           key={isRegistering ? "signup" : "login"}
           className={styles.rightPanel}
           initial={{ opacity: 0, x: 50 }}
@@ -35,6 +37,7 @@ const Login = () => {
           <h2 className={styles.title}>
             {isRegistering ? "Sign up" : "Log in"}
           </h2>
+
 
           <motion.input
             type="text"
@@ -66,6 +69,7 @@ const Login = () => {
 
           <motion.button
             className={styles.loginBtn}
+
             onClick={isRegistering ? handleRegister : handleLogin}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
@@ -85,6 +89,7 @@ const Login = () => {
                 className={styles.googleBtn}
                 whileHover={{ scale: 1.1 }}
               >
+
                 <FaGoogle /> Log in with Google
               </motion.button>
             </>
@@ -97,6 +102,7 @@ const Login = () => {
             <motion.a
               href="#"
               onClick={handleToggleForm}
+
               whileHover={{ scale: 1.1, color: "#ff6600" }}
               transition={{ duration: 0.2 }}
             >
