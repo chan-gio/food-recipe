@@ -1,96 +1,103 @@
 .container {
-  display: flex;
+  position: relative;
+  width: 100%;
   height: 100vh;
-  background-color: #242424;
-  
-}
-
-.leftPanel {
-  width: 40vw;
-  background-color: #242424;
+  background-color: #fdf6f0; // Màu nền mới (màu kem nhạt)
   display: flex;
   justify-content: center;
   align-items: center;
-  overflow: hidden;
-}
-
-.image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* Ảnh sẽ bao phủ toàn bộ khung mà không bị méo */
 }
 
 .rightPanel {
-  width: 60vw;
+  background-color: #ffffff;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
   display: flex;
-  background-color: #242424;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  text-align: center;
-  padding: 2rem;
+  color: #333; // Màu chữ chính
 }
 
-.logo {
-  font-size: 2rem;
-  color: #ff6600;
-  font-weight: bold;
-}
-
-.title {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-}
-
-.input, button {
-  width: 50%;
-  box-sizing: border-box; /* Đảm bảo padding không làm thay đổi kích thước tổng thể */
-  padding: 0.8rem;
-  margin: 0.5rem 0;
-  border-radius: 5px;
-  font-size: 1rem;
+.image {
+  display: none;
 }
 
 .input {
-  border: none;
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  outline: none;
+  font-size: 1rem;
+  box-sizing: border-box;
 }
 
-button {
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
+
 
 .loginBtn {
   background-color: #ff6600;
   color: white;
+  transition: background-color 0.3s;
 }
 
-.emailBtn {
-  background-color: white;
-  border: 1px solid #ccc;
-  color: black;
+.loginBtn:hover {
+  background-color: #e65c00;
 }
 
 .facebookBtn {
-  background-color: #1877f2;
+  background-color: #3b5998;
+
   color: white;
 }
 
 .googleBtn {
-  background-color: white;
-  border: 1px solid #ccc;
-  color: black;
+  background-color: #db4437;
+  color: white;
+}
+.loginBtn,
+.facebookBtn,
+.googleBtn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.3s;
+}
+
+.logo {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #ff6600;
+}
+
+.title {
+  margin-bottom: 20px;
+  color: #333;
 }
 
 .signup {
-  margin-top: 1rem;
+  margin-top: 20px;
+  font-size: 0.9rem;
+  color: #555;
 }
 
 .signup a {
-  color: #0073e6;
+  margin-left: 5px;
+  font-weight: bold;
+  color: #ff6600;
+
   text-decoration: none;
 }

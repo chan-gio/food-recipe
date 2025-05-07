@@ -1,0 +1,435 @@
+.backgroundWrapper {
+  background: #fdf6f0;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  box-sizing: border-box;
+}
+
+.recipeContainer {
+  background: #fff;
+  max-width: 800px;
+  width: 100%;
+  min-height: 100%;
+  padding: 60px 20px 40px;
+  box-sizing: border-box;
+  text-align: center;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+  font-size: 36px;
+  font-family: 'Georgia', serif;
+  color: #000;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.reviewSection {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.reviewBtn {
+  font-size: 11px;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 2px;
+  text-transform: uppercase;
+}
+
+.description {
+  margin-top: 10px;
+  font-size: 16px;
+  color: #000;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.infoRow {
+  margin: 30px 0 20px;
+  display: flex;
+  justify-content: center;
+  gap: 60px;
+}
+
+.infoCol {
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.4;
+  font-weight: 500;
+  color: #000;
+}
+
+.jumpBtn {
+  background: black;
+  color: white;
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: 6px;
+  margin-bottom: 30px;
+
+  &:hover {
+    background: #ff6600 !important;
+    border-color: #ff6600 !important;
+  }
+}
+
+.imageWrapper {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+}
+
+.recipeImage {
+  width: 100%;
+  max-width: 600px;
+  height: 400px;
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.recipeContent {
+  padding-top: 40px;
+  text-align: center;
+  animation: fadeIn 0.4s ease-in;
+}
+
+.intro {
+  font-size: 15px;
+  color: #000;
+  line-height: 1.7;
+  margin: 0 auto 30px;
+  max-width: 700px;
+}
+
+.subheading {
+  font-size: 20px;
+  font-family: 'Georgia', serif;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #000;
+}
+
+.reasons {
+  list-style: none;
+  padding-left: 0;
+  margin: 0 auto 40px;
+  max-width: 700px;
+  text-align: left;
+
+  li {
+    margin-bottom: 10px;
+    font-size: 15px;
+    color: #000;
+
+    strong {
+      color: #000;
+    }
+  }
+}
+
+.videoWrapper {
+  text-align: center;
+}
+
+.videoTitle {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #000;
+}
+
+.video {
+  width: 100%;
+  max-width: 700px;
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+}
+
+.bulletList {
+  list-style: disc;
+  padding-left: 20px;
+  max-width: 700px;
+  margin: 20px auto;
+  text-align: left;
+
+  li {
+    margin-bottom: 10px;
+    font-size: 15px;
+    color: #000;
+
+    strong {
+      color: #000;
+    }
+  }
+}
+
+.stepList {
+  list-style: decimal;
+  padding-left: 20px;
+  max-width: 700px;
+  margin: 20px auto;
+  text-align: left;
+
+  li {
+    margin-bottom: 12px;
+    font-size: 15px;
+    color: #000;
+
+    strong {
+      font-weight: 600;
+      color: #000;
+    }
+  }
+}
+
+.linkList {
+  list-style: none;
+  padding-left: 0;
+  max-width: 700px;
+  margin: 20px auto;
+  text-align: left;
+
+  li {
+    margin-bottom: 8px;
+
+    a {
+      color: #000;
+      text-decoration: underline;
+
+      &:hover {
+        text-decoration: none;
+        color: #c30;
+      }
+    }
+  }
+}
+
+.ingredientSection {
+  border-radius: inherit;
+  background: #faf6f1;
+  padding: 40px 20px;
+  margin-top: 60px;
+  text-align: center;
+}
+
+.ingredientHeader {
+  text-align: center;
+  margin-bottom: 30px;
+
+  .stars {
+    font-size: 20px;
+    color: #000;
+    margin-bottom: 5px;
+  }
+
+  .reviewBtn {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 10px;
+    border: 1px solid #000;
+    background: #fff;
+    text-transform: uppercase;
+    cursor: pointer;
+    margin-bottom: 10px;
+
+    &:hover {
+      background: #000;
+      color: #fff;
+    }
+  }
+
+  .recipeHeading {
+    font-size: 26px;
+    font-family: 'Georgia', serif;
+    color: #000;
+    margin: 10px 0;
+  }
+
+  .infoBar {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    font-size: 14px;
+    color: #000;
+    margin-top: 10px;
+
+    div {
+      line-height: 1.4;
+    }
+
+    strong {
+      text-transform: uppercase;
+      font-size: 12px;
+      color: #000;
+    }
+  }
+}
+
+.ingredientBox {
+  background: #fff;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 30px 20px;
+  text-align: left;
+  border-top: 1px solid #ccc;
+
+  h3 {
+    font-size: 18px;
+    text-transform: uppercase;
+    margin-bottom: 15px;
+    color: #000;
+  }
+
+  ul {
+    padding-left: 20px;
+    margin-bottom: 20px;
+
+    li {
+      list-style: disc;
+      font-size: 15px;
+      margin-bottom: 10px;
+      color: #000;
+    }
+  }
+
+  .shopBtn {
+    background: black;
+    color: white;
+    padding: 10px 20px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+
+    &:hover {
+      background: #444;
+    }
+  }
+}
+
+.commentSection {
+  border-radius: inherit;
+  background: #faf6f1;
+  padding: 40px 20px;
+  margin-top: 60px;
+  text-align: center;
+}
+
+.commentForm {
+  max-width: 700px;
+  margin: 0 auto 30px;
+  text-align: left;
+}
+
+.commentRating {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 15px;
+  font-size: 16px;
+
+  .ant-rate .anticon {
+    color: #666 !important; /* Màu sao chưa chọn đậm hơn */
+  }
+
+  .ant-rate .ant-rate-star-full .anticon,
+  .ant-rate .ant-rate-star-half .anticon {
+    color: #ff6600 !important; /* Màu sao đã chọn */
+  }
+}
+
+.commentInput {
+  border-color: #ff6600 !important;
+  font-size: 15px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  margin-bottom: 15px;
+  color: #000;
+}
+
+.submitCommentBtn {
+  background: black;
+  color: white;
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+
+  &:hover {
+    background: #ff6600 !important;
+    border-color: #ff6600 !important;
+  }
+}
+
+.commentList {
+  border-radius: inherit;
+  background: #fff;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 20px;
+  border-top: 1px solid #ccc;
+  text-align: left;
+}
+
+.commentItem {
+  padding: 15px 0;
+  border-bottom: 1px solid #ccc;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .ant-list-item-meta {
+    align-items: flex-start;
+    border-radius: inherit;
+
+    .ant-list-item-meta-avatar {
+      margin-right: 15px;
+    }
+
+    .ant-list-item-meta-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #000;
+      margin-bottom: 5px;
+    }
+
+    .commentRatingDisplay {
+      display: inline-flex;
+      align-items: center;
+      font-size: 14px;
+      margin-left: 10px;
+
+      .ant-rate .anticon {
+        color: #666 !important; /* Màu sao chưa chọn đậm hơn */
+      }
+
+      .ant-rate .ant-rate-star-full .anticon,
+      .ant-rate .ant-rate-star-half .anticon {
+        color: #ff6600 !important; /* Màu sao đã chọn */
+      }
+    }
+
+    .ant-list-item-meta-description {
+      font-size: 15px;
+      color: #000;
+      line-height: 1.5;
+
+      .ant-typography-secondary {
+        font-size: 13px;
+        color: #555;
+      }
+    }
+  }
+}

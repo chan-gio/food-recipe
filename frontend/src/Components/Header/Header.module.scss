@@ -1,0 +1,122 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  background-color: #ff6600;
+  height: 64px;
+  position: relative;
+
+  @media (max-width: 768px) {
+    padding: 0 10px;
+  }
+}
+
+.logo {
+  color: #fff;
+  font-size: 24px;
+  font-weight: bold;
+
+  a {
+    color: #fff;
+    text-decoration: none;
+
+    &:hover {
+      color: #ffd700;
+    }
+  }
+}
+
+.menuWrapper {
+  margin-left: auto; /* Căn menu sang bên phải */
+}
+
+.menu {
+  background-color: transparent;
+  border-bottom: none;
+}
+
+.ant-menu-item {
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.searchItem {
+  flex: 1;
+  max-width: 300px;
+  margin-left: auto;
+  color: #ff6600;
+}
+
+:global {
+  // Style cho menu item khi được chọn
+  .ant-menu-horizontal > .ant-menu-item-selected {
+    background-color: #ffffff33 !important;
+  }
+
+  .ant-menu-item-selected,
+  .ant-menu-item-selected a,
+  .ant-menu-item-selected .anticon {
+    color: #ffd700 !important;
+  }
+
+  // Đảm bảo input wrapper hiển thị đúng
+  .ant-input-wrapper {
+    display: flex;
+    align-items: center;
+  }
+
+  // Ghi đè style cho input của Search
+  .ant-input-affix-wrapper {
+    border-color: #ff6600 !important; // Màu border mặc định
+    background-color: #ffffff; // Màu nền của input
+    border-radius: 4px;
+
+    &:hover {
+      border-color: #ff6600 !important; // Màu border khi hover
+    }
+
+    &.ant-input-affix-wrapper-focused {
+      border-color: #ff6600 !important; // Màu border khi focus
+      box-shadow: none; // Tắt shadow mặc định của Antd nếu không muốn
+    }
+
+    // Màu chữ trong input
+    .ant-input {
+      color: #333333; // Màu chữ mặc định
+      background-color: transparent;
+
+      &:focus {
+        color: #ff6600 !important; // Màu chữ khi focus
+      }
+    }
+
+    // Màu icon tìm kiếm (nếu icon nằm trong input prefix)
+    .ant-input-prefix {
+      color: #ff6600 !important; // Màu icon tìm kiếm
+    }
+
+    // Màu icon clear (nếu có)
+    .ant-input-clear-icon {
+      color: #ff6600 !important;
+    }
+  }
+
+  // Ghi đè style cho button tìm kiếm (nếu Search có button)
+  .ant-input-search-button {
+    border-color: #ff6600 !important; // Màu border của button
+    background-color: #ffffff; // Màu nền của button
+    color: #ff6600 !important; // Màu icon trong button
+
+    &:hover {
+      border-color: #ff6600 !important;
+      background-color: #f0f0f0 !important; // Màu nền khi hover
+      color: #ff6600 !important; // Màu icon khi hover
+    }
+  }
+
+  // Ghi đè màu icon trong button (nếu cần)
+  .ant-input-search-button .anticon {
+    color: #ff6600 !important;
+  }
+}
