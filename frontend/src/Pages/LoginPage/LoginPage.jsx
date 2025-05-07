@@ -2,31 +2,62 @@ import styles from "./LoginPage.module.scss";
 import { FaFacebook, FaGoogle } from "react-icons/fa";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-
+import { loginService } from "../../services/loginService";
+import { userService } from "../../services/userService";
 
 const Login = () => {
   const [isRegistering, setIsRegistering] = useState(false);
+  const [signinAccount, setSigninAccount] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
 
   const handleToggleForm = () => {
     setIsRegistering(!isRegistering);
+    setSigninAccount("");
+    setEmail("");
+    setPassword("");
+    setConfirmPassword("");
+    setError("");
   };
 
-  const handleLogin = () => {
-    console.log("Logging in with", email, password);
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      await loginService.login({ signin_account: signinAccount, password });
+      window.location.href = "/"; // Redirect to protected page
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
-  const handleRegister = () => {
-    console.log("Registering with", email, password, confirmPassword);
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+    try {
+      await userService.register({
+        signin_account: signinAccount,
+        password,
+        email,
+        full_name: "", // Optional field, can add input if needed
+        role: "user",
+      });
+      // Auto-login after registration
+      await loginService.login({ signin_account: signinAccount, password });
+      window.location.href = "/"; // Redirect to protected page
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   return (
     <div className={styles.container}>
       <AnimatePresence mode="wait">
         <motion.div
-
           key={isRegistering ? "signup" : "login"}
           className={styles.rightPanel}
           initial={{ opacity: 0, x: 50 }}
@@ -38,15 +69,24 @@ const Login = () => {
             {isRegistering ? "Sign up" : "Log in"}
           </h2>
 
-
           <motion.input
             type="text"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Signin Account"
+            value={signinAccount}
+            onChange={(e) => setSigninAccount(e.target.value)}
             className={styles.input}
             whileFocus={{ scale: 1.05 }}
           />
+          {isRegistering && (
+            <motion.input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={styles.input}
+              whileFocus={{ scale: 1.05 }}
+            />
+          )}
           <motion.input
             type="password"
             placeholder="Password"
@@ -55,7 +95,6 @@ const Login = () => {
             className={styles.input}
             whileFocus={{ scale: 1.05 }}
           />
-
           {isRegistering && (
             <motion.input
               type="password"
@@ -69,7 +108,6 @@ const Login = () => {
 
           <motion.button
             className={styles.loginBtn}
-
             onClick={isRegistering ? handleRegister : handleLogin}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
@@ -89,11 +127,12 @@ const Login = () => {
                 className={styles.googleBtn}
                 whileHover={{ scale: 1.1 }}
               >
-
                 <FaGoogle /> Log in with Google
               </motion.button>
             </>
           )}
+
+          {error && <p style={{ color: 'red' }}>{error}</p>}
 
           <motion.p className={styles.signup} whileHover={{ scale: 1.05 }}>
             {isRegistering
@@ -102,7 +141,6 @@ const Login = () => {
             <motion.a
               href="#"
               onClick={handleToggleForm}
-
               whileHover={{ scale: 1.1, color: "#ff6600" }}
               transition={{ duration: 0.2 }}
             >
