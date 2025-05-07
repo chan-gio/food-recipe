@@ -13,6 +13,7 @@ import { FavoriteModule } from './favorite/favorite.module';
 import { SearchesModule } from './searches/searches.module';
 import { LoginModule } from './login/login.module';
 
+
 @Module({
   imports: [
     ConfigModule.forRoot({ load: [databaseConfig], isGlobal: true }),
@@ -44,5 +45,6 @@ import { LoginModule } from './login/login.module';
     LoginModule,
   ],
   providers: [CloudinaryProvider],
+
 })
 export class AppModule {}
