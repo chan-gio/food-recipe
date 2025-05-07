@@ -1,28 +1,36 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, ParseIntPipe, UsePipes, ValidationPipe, Inject } from '@nestjs/common';
-import { IUserService } from '../../common/interfaces/user.service.interface';
-import { Response } from '../../common/types/response.type';
+import { Controller, Get, Post, Put, Delete, Param, Body, ParseIntPipe, UsePipes, ValidationPipe, Query, Inject } from '@nestjs/common';
+import { UserService } from '../services/user.service';
 import { User } from '../entities/user.entity';
 import { CreateUserDto } from '../dtos/create-user.dto';
-import { UpdateUserDto } from '../dtos/update-user.dto';
+import { Response } from '../../common/types/response.type';
+import { PaginationDto } from 'src/common/dots/pagination.dto';
 
 @Controller('users')
 export class UserController {
   constructor(
     @Inject('IUserService')
-    private readonly userService: IUserService) {}
+    private readonly userService: UserService) {}
 
   @Get()
-  async getAllUsers(): Promise<Response<User[]>> {
-    const data = await this.userService.findAll();
-    return { data, message: 'Users retrieved successfully', code: 200 };
+  @UsePipes(new ValidationPipe({ whitelist: true }))
+  async findAll(@Query() paginationDto: PaginationDto): Promise<Response<User[]>> {
+    const { data, total } = await this.userService.findAll(paginationDto);
+    return {
+      data,
+      meta: {
+        total,
+        page: paginationDto.page ?? 1,
+        limit: paginationDto.limit ?? 10,
+        totalPages: Math.ceil(total / (paginationDto.limit ?? 10)),
+      },
+      message: 'Users retrieved successfully',
+      code: 200,
+    };
   }
 
   @Get(':id')
-  async getUserById(@Param('id', ParseIntPipe) id: number): Promise<Response<User>> {
+  async findById(@Param('id', ParseIntPipe) id: number): Promise<Response<User | null>> {
     const data = await this.userService.findById(id);
-    if (!data) {
-      throw new Error('User not found');
-    }
     return { data, message: 'User retrieved successfully', code: 200 };
   }
 
@@ -35,20 +43,20 @@ export class UserController {
 
   @Post()
   @UsePipes(new ValidationPipe({ whitelist: true }))
-  async createUser(@Body() dto: CreateUserDto): Promise<Response<User>> {
-    const data = await this.userService.create(dto);
+  async create(@Body() user: Partial<User>): Promise<Response<User>> {
+    const data = await this.userService.create(user);
     return { data, message: 'User created successfully', code: 201 };
   }
 
   @Put(':id')
   @UsePipes(new ValidationPipe({ whitelist: true }))
-  async updateUser(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateUserDto): Promise<Response<User>> {
-    const data = await this.userService.update(id, dto);
+  async update(@Param('id', ParseIntPipe) id: number, @Body() user: Partial<User>): Promise<Response<User>> {
+    const data = await this.userService.update(id, user);
     return { data, message: 'User updated successfully', code: 200 };
   }
 
   @Delete(':id')
-  async deleteUser(@Param('id', ParseIntPipe) id: number): Promise<Response<null>> {
+  async delete(@Param('id', ParseIntPipe) id: number): Promise<Response<null>> {
     await this.userService.delete(id);
     return { data: null, message: 'User deleted successfully', code: 200 };
   }

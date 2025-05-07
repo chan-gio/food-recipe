@@ -6,6 +6,7 @@ import { UploadMediaDto } from '../../category/dtos/upload-media.dto';
 export interface ICategoryService {
   getAllCategories(): Promise<Category[]>;
   getCategoryById(id: number): Promise<Category>;
+  findByName(name: string): Promise<Category[]>;
   createCategory(dto: CreateCategoryDto): Promise<Category>;
   updateCategory(id: number, dto: UpdateCategoryDto): Promise<Category>;
   deleteCategory(id: number): Promise<void>;

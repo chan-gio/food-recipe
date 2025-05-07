@@ -1,7 +1,8 @@
 import { User } from '../../user/entities/user.entity';
+import { PaginationDto } from '../dots/pagination.dto';
 
 export interface IUserRepository {
-  findAll(): Promise<User[]>;
+  findAll(paginationDto: PaginationDto): Promise<{ data: User[]; total: number }>;
   findById(id: number): Promise<User | null>;
   findBySigninAccount(signin_account: string): Promise<User | null>;
   findByEmail(email: string): Promise<User | null>;

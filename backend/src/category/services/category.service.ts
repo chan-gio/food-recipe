@@ -27,6 +27,10 @@ export class CategoryService implements ICategoryService {
     return category;
   }
 
+  async findByName(name: string): Promise<Category[]> {
+    return this.categoryRepository.findByName(name);
+  }
+
   async createCategory(dto: CreateCategoryDto): Promise<Category> {
     return this.categoryRepository.create(dto);
   }

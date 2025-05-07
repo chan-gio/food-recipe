@@ -25,6 +25,12 @@ export class CategoryController {
     return { data, message: 'Category retrieved successfully', code: 200 };
   }
 
+  @Get('name/:name')
+  async findByName(@Param('name') name: string): Promise<Response<Category[]>> {
+    const data = await this.categoryService.findByName(name);
+    return { data, message: 'Categories retrieved successfully', code: 200 };
+  }
+
   @Post()
   @UsePipes(new ValidationPipe({ whitelist: true }))
   async createCategory(@Body() dto: CreateCategoryDto): Promise<Response<Category>> {

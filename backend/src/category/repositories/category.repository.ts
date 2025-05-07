@@ -1,39 +1,82 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Like } from 'typeorm';
 import { Category } from '../entities/category.entity';
 import { ICategoryRepository } from '../../common/interfaces/category.repository.interface';
 
 @Injectable()
 export class CategoryRepository implements ICategoryRepository {
+  private readonly logger = new Logger(CategoryRepository.name);
+
   constructor(
     @InjectRepository(Category)
     private readonly categoryRepo: Repository<Category>,
   ) {}
 
   async findAll(): Promise<Category[]> {
-    return this.categoryRepo.find();
+    try {
+      return await this.categoryRepo.find({ relations: ['recipes'] });
+    } catch (error) {
+      this.logger.error(`Failed to fetch all categories: ${error.message}`, error.stack);
+      throw error;
+    }
   }
 
   async findById(id: number): Promise<Category | null> {
-    return this.categoryRepo.findOne({ where: { category_id: id } });
+    try {
+      return await this.categoryRepo.findOne({ where: { category_id: id }, relations: ['recipes'] });
+    } catch (error) {
+      this.logger.error(`Failed to fetch category with ID ${id}: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  async findByName(name: string): Promise<Category[]> {
+    try {
+      const categories = await this.categoryRepo.find({
+        where: { category_name: Like(`%${name}%`) },
+      });
+      this.logger.log(`Fetched categories with name '${name}': ${JSON.stringify(categories)}`);
+      return categories;
+    } catch (error) {
+      this.logger.error(`Failed to fetch categories with name '${name}': ${error.message}`, error.stack);
+      throw error;
+    }
   }
 
   async create(category: Partial<Category>): Promise<Category> {
-    const newCategory = this.categoryRepo.create(category);
-    return this.categoryRepo.save(newCategory);
+    try {
+      const newCategory = this.categoryRepo.create(category);
+      return await this.categoryRepo.save(newCategory);
+    } catch (error) {
+      this.logger.error(`Failed to create category: ${error.message}`, error.stack);
+      throw error;
+    }
   }
 
   async update(id: number, category: Partial<Category>): Promise<Category> {
-    await this.categoryRepo.update(id, category);
-    const updatedCategory = await this.findById(id);
-    if (!updatedCategory) {
-      throw new Error(`Category with id ${id} not found`);
+    try {
+      await this.categoryRepo.update(id, category);
+      const updatedCategory = await this.findById(id);
+      if (!updatedCategory) {
+        throw new Error(`Category with ID ${id} not found`);
+      }
+      return updatedCategory;
+    } catch (error) {
+      this.logger.error(`Failed to update category with ID ${id}: ${error.message}`, error.stack);
+      throw error;
     }
-    return updatedCategory;
   }
 
   async delete(id: number): Promise<void> {
-    await this.categoryRepo.delete(id);
+    try {
+      const result = await this.categoryRepo.delete(id);
+      if (result.affected === 0) {
+        throw new Error(`Category with ID ${id} not found`);
+      }
+    } catch (error) {
+      this.logger.error(`Failed to delete category with ID ${id}: ${error.message}`, error.stack);
+      throw error;
+    }
   }
 }

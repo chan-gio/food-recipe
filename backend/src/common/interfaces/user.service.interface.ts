@@ -1,8 +1,9 @@
 import { User } from '../../user/entities/user.entity';
 import { CreateUserDto } from '../../user/dtos/create-user.dto';
+import { PaginationDto } from '../dots/pagination.dto';
 
 export interface IUserService {
-  findAll(): Promise<User[]>;
+  findAll(paginationDto: PaginationDto): Promise<{ data: User[]; total: number }>;
   findById(id: number): Promise<User | null>;
   register(dto: CreateUserDto): Promise<User>;
   create(user: Partial<User>): Promise<User>;

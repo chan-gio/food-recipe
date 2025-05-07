@@ -4,6 +4,7 @@ import { User } from '../entities/user.entity';
 import { CreateUserDto } from '../dtos/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { IUserService } from 'src/common/interfaces/user.service.interface';
+import { PaginationDto } from 'src/common/dots/pagination.dto';
 
 @Injectable()
 export class UserService implements IUserService {
@@ -12,8 +13,8 @@ export class UserService implements IUserService {
     private readonly userRepository: IUserRepository,
   ) {}
 
-  async findAll(): Promise<User[]> {
-    return this.userRepository.findAll();
+  async findAll(paginationDto: PaginationDto): Promise<{ data: User[]; total: number }> {
+    return this.userRepository.findAll(paginationDto);
   }
 
   async findById(id: number): Promise<User | null> {
