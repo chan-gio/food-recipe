@@ -3,29 +3,70 @@
   background-size: cover;
   min-height: 100vh;
   width: 100%;
-  padding: 40px 20px; // giảm padding để gọn hơn
+  padding: 40px 20px;
   box-sizing: border-box;
-  background-color: #fdf6f0;
+  background-color: white;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.categoryMenu {
+.navbar {
+  width: 100%;
+  text-align: center;
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.logo {
+  color: #333;
+}
+
+.categoryWrapper {
+  width: 100%;
+  max-width: 1000px;
+  margin: 30px 0;
+}
+
+.categoryCarousel {
+  .slick-slide > div {
+    display: flex;
+    justify-content: center;
+  }
+}
+
+.categoryItemWrapper {
+  margin: 0 10px;
+  display: flex !important;
+  justify-content: center !important;
+}
+
+.categoryItem {
+  width: 200px;
   display: flex;
   justify-content: center;
-  gap: 40px; // nhỏ hơn chút cho gọn
-  font-size: 1.5rem;
-  margin: 30px 0;
+  align-items: center;
+  padding: 10px 16px;
+  border-radius: 20px;
+  background-color: #f0f0f0;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+  text-align: center;
+  font-size: 1.2rem;
   text-transform: uppercase;
   color: black;
-  flex-wrap: wrap;
-  text-align: center;
 }
+
+.active {
+  background-color: #ff6347;
+  color: white;
+}
+
 .carouselWrapper {
   position: relative;
   width: 100%;
-  max-width: 1000px; // mỗi card 300px + gap
+  max-width: 1000px;
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -34,9 +75,13 @@
 
 .carousel {
   width: 100%;
+  display: flex;
+  justify-content: center;
 
   .slick-slide > div {
-    padding: 0 10px; // cách giữa các card là 20px (10 trái + 10 phải)
+    display: flex;
+    justify-content: center;
+    padding: 0 10px;
     box-sizing: border-box;
   }
 
@@ -46,8 +91,9 @@
 }
 
 .recipeCard {
-  width: 300px; // ✅ cố định chiều rộng
-  height: 360px; // ✅ cố định chiều cao
+  margin: 0 auto;
+  width: 300px;
+  height: 360px;
   background-color: #fff;
   border-radius: 16px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
@@ -64,7 +110,7 @@
   .ant-card-cover img {
     width: 100%;
     height: 180px;
-    object-fit: cover; // ảnh luôn vừa khung, không méo
+    object-fit: cover;
   }
 
   .ant-card-body {
@@ -111,4 +157,140 @@
 
 .arrow:last-of-type {
   right: -40px;
+}
+
+.topUsersSection {
+  width: 100%;
+  max-width: 1000px;
+  margin: 40px 0;
+}
+
+.sectionTitle {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.topUsersGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.userCard {
+  margin: 0 auto;
+  width: 300px;
+  height: 200px;
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+  }
+
+  .ant-card-body {
+    padding: 16px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+}
+
+.userCardContent {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.userAvatar {
+  flex-shrink: 0;
+}
+
+.userInfo {
+  flex-grow: 1;
+  text-align: left;
+}
+
+.username {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.userBio {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recipesCount {
+  font-size: 0.9rem;
+  color: #ff6347;
+  font-weight: bold;
+}
+.featuredCollection {
+  display: flex;
+  max-width: 1000px;
+  margin: 40px auto;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+}
+
+.featuredImage {
+  flex: 3;
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.featuredText {
+  flex: 1;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.featuredLabel {
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  color: #999;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.featuredTitle {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.featuredDescription {
+  font-size: 0.95rem;
+  color: #555;
 }

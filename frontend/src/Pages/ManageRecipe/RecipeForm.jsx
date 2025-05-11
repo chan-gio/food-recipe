@@ -1,192 +1,245 @@
 import React, { useState, useEffect } from "react";
 import styles from "./RecipeForm.module.scss";
-import { Input, Button, Form, Typography, Upload, message } from "antd";
+import {
+  Input,
+  Button,
+  Form,
+  Typography,
+  Upload,
+  message,
+  Select,
+  InputNumber,
+  DatePicker,
+} from "antd";
 import {
   UploadOutlined,
   PlusOutlined,
   EditOutlined,
   PictureOutlined,
+  MinusCircleOutlined,
 } from "@ant-design/icons";
 import { useParams } from "react-router-dom";
 
 const { Title } = Typography;
 const { TextArea } = Input;
+const { Option } = Select;
 
 const RecipeForm = () => {
   const [form] = Form.useForm();
   const { id } = useParams();
   const isEditMode = !!id;
-  const [recipeData, setRecipeData] = useState(null);
-
-  // Giả lập danh sách công thức
-  const mockRecipes = [
-    {
-      id: "1",
-      title: "Recipe for Cake",
-      description: "A delicious chocolate cake",
-      ingredients: "Flour\nSugar\nCocoa powder",
-      steps: "Mix ingredients\nBake at 350°F\nCool and serve",
-      images: [],
-      video: null,
-    },
-    {
-      id: "2",
-      title: "Homemade Pizza",
-      description: "Classic pepperoni pizza",
-      ingredients: "Tomato sauce\nCheese\nPepperoni",
-      steps: "Spread sauce\nAdd toppings\nBake at 425°F",
-      images: [],
-      video: null,
-    },
-    {
-      id: "3",
-      title: "Chocolate Cookies",
-      description: "Soft and chewy cookies",
-      ingredients: "Fl повод, cocoa, sugar",
-      steps: "Mix dough\nShape cookies\nBake at 375°F",
-      images: [],
-      video: null,
-    },
-  ];
 
   useEffect(() => {
-    if (isEditMode && id) {
-      // Giả lập lấy dữ liệu công thức từ API hoặc danh sách
-      const foundRecipe = mockRecipes.find((recipe) => recipe.id === id);
-      if (foundRecipe) {
-        setRecipeData(foundRecipe);
-        form.setFieldsValue({
-          title: foundRecipe.title,
-          description: foundRecipe.description,
-          ingredients: foundRecipe.ingredients,
-          steps: foundRecipe.steps,
-          images: foundRecipe.images || [],
-          video: foundRecipe.video || null,
-        });
-      } else {
-        message.error("Recipe not found!");
-      }
+    if (isEditMode) {
+      // Gọi API để lấy dữ liệu recipe theo id và setForm nếu cần
+      // Đây chỉ là mock
+      const fetchedData = {
+        recipe_name: "Spaghetti Bolognese",
+        description: "A classic Italian pasta dish with rich meat sauce.",
+        recipe_type: "Italian",
+        servings: 4,
+        prep_time: 15,
+        cook_time: 45,
+        created_at: null,
+        ingredients: [
+          {
+            ingredient_name: "Tomato",
+            amount: 200,
+            unit: "g",
+          },
+          {
+            ingredient_name: "Pasta",
+            amount: 300,
+            unit: "g",
+          },
+        ],
+        instructions: [
+          {
+            step_number: 1,
+            description: "Boil pasta in salted water for 10 minutes.",
+          },
+          {
+            step_number: 2,
+            description: "Cook tomato sauce with minced meat for 30 minutes.",
+          },
+        ],
+        categories: ["Italian"],
+        images: [],
+        videos: [],
+      };
+      form.setFieldsValue(fetchedData);
     }
-  }, [id, form, isEditMode]);
+  }, [form, isEditMode, id]);
 
   const handleSubmit = (values) => {
-    console.log(isEditMode ? "Updated Recipe:" : "Submitted Recipe:", values);
+    console.log("Submit: ", values);
     message.success(
-      isEditMode
-        ? "Recipe updated successfully!"
-        : "Recipe submitted successfully!"
+      isEditMode ? "Updated successfully" : "Submitted successfully"
     );
-    if (!isEditMode) {
-      form.resetFields();
-    }
   };
-
 
   return (
     <div className={styles.recipeFormContainer}>
       <Title className={styles.heading}>
-        {isEditMode ? "Edit Your Recipe" : "Add a New Recipe"}
+        {isEditMode ? "Edit Recipe" : "Add New Recipe"}
       </Title>
-      <div className={styles.formWrapper}>
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleSubmit}
-          className={styles.form}
+
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleSubmit}
+        className={styles.form}
+      >
+        <Form.Item
+          name="recipe_name"
+          label="Recipe Name"
+          rules={[{ required: true, message: "Please enter recipe name" }]}
         >
-          <Form.Item
-            name="title"
-            label="Recipe Title"
-            rules={[{ required: true, message: "Please enter a title" }]}
-          >
-            <Input placeholder="e.g. Apricot-Dijon Glazed Salmon" />
-          </Form.Item>
+          <Input placeholder="e.g. Spaghetti Bolognese" />
+        </Form.Item>
 
-          <Form.Item
-            name="description"
-            label="Short Description"
-            rules={[{ required: true, message: "Please enter a description" }]}
-          >
-            <TextArea rows={3} placeholder="Briefly describe your recipe..." />
-          </Form.Item>
+        <Form.Item
+          name="description"
+          label="Description"
+          rules={[{ required: true, message: "Please enter description" }]}
+        >
+          <TextArea rows={3} placeholder="Describe your recipe..." />
+        </Form.Item>
 
-          <Form.Item
-            name="ingredients"
-            label="Ingredients (one per line)"
-            rules={[{ required: true, message: "Please list ingredients" }]}
-          >
-            <TextArea
-              rows={6}
-              placeholder="e.g. 1/2 cup apricot preserves..."
-            />
-          </Form.Item>
+        <Form.Item
+          name="recipe_type"
+          label="Type"
+          rules={[{ required: true, message: "Please enter recipe type" }]}
+        >
+          <Input placeholder="e.g. Italian" />
+        </Form.Item>
 
-          <Form.Item
-            name="steps"
-            label="Instructions (one step per line)"
-            rules={[{ required: true, message: "Please provide instructions" }]}
-          >
-            <TextArea
-              rows={6}
-              placeholder="e.g. Mix all sauce ingredients..."
-            />
-          </Form.Item>
+        <Form.Item name="servings" label="Servings">
+          <InputNumber min={1} placeholder="Number of servings" />
+        </Form.Item>
 
-          <Form.Item
-            name="images"
-            label="Upload Images"
-            className={styles.imageUploadItem}
-          >
-            <div className={styles.uploadWrapper}>
-              <Upload
-                name="images"
-                listType="picture-card"
-                multiple
-                beforeUpload={() => false}
-                defaultFileList={isEditMode && recipeData ? recipeData.images || [] : []}
-              >
-                <div className={styles.imageUploadButton}>
-                  <PictureOutlined className={styles.uploadIcon} />
-                  <span>Add Images</span>
+        <Form.Item name="prep_time" label="Preparation Time (mins)">
+          <InputNumber min={0} />
+        </Form.Item>
+
+        <Form.Item name="cook_time" label="Cooking Time (mins)">
+          <InputNumber min={0} />
+        </Form.Item>
+
+        <Form.Item name="created_at" label="Created At">
+          <DatePicker showTime />
+        </Form.Item>
+
+        <Form.List name="ingredients">
+          {(fields, { add, remove }) => (
+            <div>
+              <label>Ingredients</label>
+              {fields.map(({ key, name, ...restField }) => (
+                <div
+                  key={key}
+                  style={{ display: "flex", gap: 8, marginBottom: 8 }}
+                >
+                  <Form.Item
+                    {...restField}
+                    name={[name, "ingredient_name"]}
+                    rules={[{ required: true }]}
+                  >
+                    <Input placeholder="Name" />
+                  </Form.Item>
+                  <Form.Item {...restField} name={[name, "amount"]}>
+                    <InputNumber min={0} placeholder="Amount" />
+                  </Form.Item>
+                  <Form.Item {...restField} name={[name, "unit"]}>
+                    <Input placeholder="Unit" />
+                  </Form.Item>
+                  <Button
+                    icon={<MinusCircleOutlined />}
+                    onClick={() => remove(name)}
+                  />
                 </div>
-              </Upload>
+              ))}
+              <Form.Item>
+                <Button onClick={() => add()} icon={<PlusOutlined />}>
+                  Add Ingredient
+                </Button>
+              </Form.Item>
             </div>
-          </Form.Item>
+          )}
+        </Form.List>
 
-          <Form.Item name="video" label="Upload Video">
-            <Upload
-              name="video"
-              accept="video/mp4"
-              maxCount={1}
-              beforeUpload={(file) => {
-                const isMP4 = file.type === "video/mp4";
-                if (!isMP4) {
-                  message.error("You can only upload MP4 video!");
-                }
-                return isMP4 || Upload.LIST_IGNORE;
-              }}
-              defaultFileList={
-                isEditMode && recipeData && recipeData.video ? [recipeData.video] : []
-              }
-            >
-              <Button className={styles.uploadButton} icon={<UploadOutlined />}>
-                Select Video
-              </Button>
-            </Upload>
-          </Form.Item>
+        <Form.List name="instructions">
+          {(fields, { add, remove }) => (
+            <div>
+              <label>Instructions</label>
+              {fields.map(({ key, name, ...restField }) => (
+                <div
+                  key={key}
+                  style={{ display: "flex", gap: 8, marginBottom: 8 }}
+                >
+                  <Form.Item {...restField} name={[name, "step_number"]}>
+                    <InputNumber min={1} placeholder="Step #" />
+                  </Form.Item>
+                  <Form.Item
+                    {...restField}
+                    name={[name, "description"]}
+                    rules={[{ required: true }]}
+                  >
+                    <Input placeholder="Instruction" />
+                  </Form.Item>
+                  <Button
+                    icon={<MinusCircleOutlined />}
+                    onClick={() => remove(name)}
+                  />
+                </div>
+              ))}
+              <Form.Item>
+                <Button onClick={() => add()} icon={<PlusOutlined />}>
+                  Add Instruction
+                </Button>
+              </Form.Item>
+            </div>
+          )}
+        </Form.List>
 
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              className={styles.submitButton}
-              icon={isEditMode ? <EditOutlined /> : <PlusOutlined />}
-            >
-              {isEditMode ? "Update Recipe" : "Add Recipe"}
-            </Button>
-          </Form.Item>
-        </Form>
-      </div>
+        <Form.Item name="categories" label="Categories">
+          <Select mode="tags" placeholder="Select or type categories" />
+        </Form.Item>
+
+        <Form.Item name="images" label="Upload Images">
+          <Upload
+            name="images"
+            listType="picture-card"
+            multiple
+            beforeUpload={() => false}
+          >
+            <div>
+              <PictureOutlined />
+              <div>Add</div>
+            </div>
+          </Upload>
+        </Form.Item>
+
+        <Form.Item name="videos" label="Upload Videos">
+          <Upload
+            name="videos"
+            accept="video/mp4"
+            beforeUpload={() => false}
+            multiple
+          >
+            <Button icon={<UploadOutlined />}>Select Videos</Button>
+          </Upload>
+        </Form.Item>
+
+        <Form.Item>
+          <Button
+            type="primary"
+            htmlType="submit"
+            icon={isEditMode ? <EditOutlined /> : <PlusOutlined />}
+          >
+            {isEditMode ? "Update Recipe" : "Add Recipe"}
+          </Button>
+        </Form.Item>
+      </Form>
     </div>
   );
 };
