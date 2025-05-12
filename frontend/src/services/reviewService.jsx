@@ -10,6 +10,15 @@ class ReviewService {
     }
   }
 
+  async getReviewsByUserId(userId, params = {}) {
+    try {
+      const response = await api.get(`/reviews/user/${userId}`, { params });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Failed to fetch reviews by user');
+    }
+  }
+
   async getReviewById(id) {
     try {
       const response = await api.get(`/reviews/${id}`);

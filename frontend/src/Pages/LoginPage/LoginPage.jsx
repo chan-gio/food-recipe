@@ -4,19 +4,23 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { loginService } from "../../services/loginService";
 import { userService } from "../../services/userService";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [isRegistering, setIsRegistering] = useState(false);
   const [signinAccount, setSigninAccount] = useState("");
   const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState(""); 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleToggleForm = () => {
     setIsRegistering(!isRegistering);
     setSigninAccount("");
     setEmail("");
+    setFullName(""); 
     setPassword("");
     setConfirmPassword("");
     setError("");
@@ -26,7 +30,7 @@ const Login = () => {
     e.preventDefault();
     try {
       await loginService.login({ signin_account: signinAccount, password });
-      window.location.href = "/"; // Redirect to protected page
+      navigate("/"); 
     } catch (err) {
       setError(err.message);
     }
@@ -38,17 +42,20 @@ const Login = () => {
       setError("Passwords do not match");
       return;
     }
+    if (!fullName.trim()) {
+      setError("Full name is required");
+      return;
+    }
     try {
       await userService.register({
         signin_account: signinAccount,
         password,
         email,
-        full_name: "", // Optional field, can add input if needed
+        full_name: fullName, 
         role: "user",
       });
-      // Auto-login after registration
       await loginService.login({ signin_account: signinAccount, password });
-      window.location.href = "/"; // Redirect to protected page
+      navigate("/"); 
     } catch (err) {
       setError(err.message);
     }
@@ -78,14 +85,24 @@ const Login = () => {
             whileFocus={{ scale: 1.05 }}
           />
           {isRegistering && (
-            <motion.input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className={styles.input}
-              whileFocus={{ scale: 1.05 }}
-            />
+            <>
+              <motion.input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={styles.input}
+                whileFocus={{ scale: 1.05 }}
+              />
+              <motion.input
+                type="text"
+                placeholder="Full Name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className={styles.input}
+                whileFocus={{ scale: 1.05 }}
+              />
+            </>
           )}
           <motion.input
             type="password"

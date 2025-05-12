@@ -15,7 +15,8 @@ class FavoriteService {
       const response = await api.get(`/favorites/${userId}`, { params });
       return response.data;
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch user favorites');
+      console.error(`Failed to fetch user favorites: ${error.message}`);
+      return { data: [], meta: { total: 0 } };
     }
   }
 

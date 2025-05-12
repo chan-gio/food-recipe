@@ -19,6 +19,15 @@ class IngredientService {
     }
   }
 
+  async getIngredientByName(name, params = {}) {
+    try {
+      const response = await api.get(`/ingredients/name/${encodeURIComponent(name)}`, { params });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Failed to fetch ingredients by name');
+    }
+  }
+
   async createIngredient(dto) {
     try {
       const response = await api.post('/ingredients', dto);
