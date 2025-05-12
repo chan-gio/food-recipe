@@ -12,7 +12,7 @@ export class LoginController {
 
   @Post()
   @UsePipes(new ValidationPipe({ whitelist: true }))
-  async login(@Body() dto: LoginDto): Promise<Response<{ access_token: string }>> {
+  async login(@Body() dto: LoginDto): Promise<Response<{ access_token: string; user_id: number }>> {
     const data = await this.loginService.login(dto);
     return { data, message: 'Login successful', code: 200 };
   }

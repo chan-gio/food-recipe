@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, ParseIntPipe, UsePipes, ValidationPipe, Inject } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, ParseIntPipe, UsePipes, ValidationPipe, Inject, Query } from '@nestjs/common';
 import { IIngredientService } from '../../common/interfaces/ingredient.service.interface';
 import { Response } from '../../common/types/response.type';
 import { Ingredient } from '../entities/ingredient.entity';
 import { CreateIngredientDto } from '../dtos/create-ingredient.dto';
 import { UpdateIngredientDto } from '../dtos/update-ingredient.dto';
+import { PaginationDto } from 'src/common/dots/pagination.dto';
 
 @Controller('ingredients')
 export class IngredientController {
@@ -11,17 +12,34 @@ export class IngredientController {
     @Inject('IIngredientService')
     private readonly ingredientService: IIngredientService) {}
 
-  @Get()
-  async getAllIngredients(): Promise<Response<Ingredient[]>> {
-    const data = await this.ingredientService.getAllIngredients();
-    return { data, message: 'Ingredients retrieved successfully', code: 200 };
-  }
+    @Get()
+    @UsePipes(new ValidationPipe({ whitelist: true }))
+    async findAll(@Query() paginationDto: PaginationDto): Promise<Response<Ingredient[]>> {
+      const { data, total } = await this.ingredientService.findAll(paginationDto);
+      return {
+        data,
+        meta: {
+          total,
+          page: paginationDto.page ?? 1,
+          limit: paginationDto.limit ?? 10,
+          totalPages: Math.ceil(total / (paginationDto.limit ?? 10)),
+        },
+        message: 'Ingredients retrieved successfully',
+        code: 200,
+      };
+    }
 
   @Get(':id')
   async getIngredientById(@Param('id', ParseIntPipe) id: number): Promise<Response<Ingredient>> {
     const data = await this.ingredientService.getIngredientById(id);
     return { data, message: 'Ingredient retrieved successfully', code: 200 };
   }
+
+    @Get('name/:name')
+    async findByName(@Param('name') name: string): Promise<Response<Ingredient[]>> {
+      const data = await this.ingredientService.findByName(name);
+      return { data, message: 'Ingredient retrieved successfully', code: 200 };
+    }
 
   @Post()
   @UsePipes(new ValidationPipe({ whitelist: true }))

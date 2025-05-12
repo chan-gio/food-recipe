@@ -4,9 +4,9 @@ import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '../../user/entities/user.entity';
 import { LoginDto } from '../dtos/login.dto';
-import { ILoginService } from '../../common/interfaces/login.service.interface';
 import { UnauthorizedAccessException } from '../../common/exceptions/unauthorized.exception';
 import * as bcrypt from 'bcrypt';
+import { ILoginService } from 'src/common/interfaces/login.service.interface';
 
 @Injectable()
 export class LoginService implements ILoginService {
@@ -16,7 +16,7 @@ export class LoginService implements ILoginService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async login(dto: LoginDto): Promise<{ access_token: string }> {
+  async login(dto: LoginDto): Promise<{ access_token: string; user_id: number }> {
     const user = await this.userRepo.findOne({ where: { signin_account: dto.signin_account } });
     if (!user) {
       throw new UnauthorizedAccessException('Invalid credentials');
@@ -30,6 +30,6 @@ export class LoginService implements ILoginService {
     const payload = { sub: user.user_id, username: user.signin_account, role: user.role };
     const access_token = this.jwtService.sign(payload);
 
-    return { access_token };
+    return { access_token, user_id: user.user_id };
   }
 }

@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like } from 'typeorm';
 import { Category } from '../entities/category.entity';
 import { ICategoryRepository } from '../../common/interfaces/category.repository.interface';
+import { PaginationDto } from 'src/common/dots/pagination.dto';
 
 @Injectable()
 export class CategoryRepository implements ICategoryRepository {
@@ -13,9 +14,17 @@ export class CategoryRepository implements ICategoryRepository {
     private readonly categoryRepo: Repository<Category>,
   ) {}
 
-  async findAll(): Promise<Category[]> {
+  async findAll(paginationDto: PaginationDto): Promise<{ data: Category[]; total: number }> {
     try {
-      return await this.categoryRepo.find({ relations: ['recipes'] });
+      const { page, limit } = paginationDto;
+      const skip = ((page ?? 1) - 1) * (limit ?? 10);
+      const [data, total] = await this.categoryRepo.findAndCount({
+        skip,
+        take: limit,
+        relations: ['recipes'],
+      });
+      this.logger.log(`Fetched ${data.length} categories (page ${page}, limit ${limit})`);
+      return { data, total };
     } catch (error) {
       this.logger.error(`Failed to fetch all categories: ${error.message}`, error.stack);
       throw error;

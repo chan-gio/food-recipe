@@ -7,6 +7,7 @@ import { CreateCategoryDto } from '../dtos/create-category.dto';
 import { UpdateCategoryDto } from '../dtos/update-category.dto';
 import { UploadMediaDto, MediaType } from '../dtos/upload-media.dto';
 import { EntityNotFoundException } from '../../common/exceptions/not-found.exception';
+import { PaginationDto } from 'src/common/dots/pagination.dto';
 
 @Injectable()
 export class CategoryService implements ICategoryService {
@@ -15,8 +16,8 @@ export class CategoryService implements ICategoryService {
     private readonly categoryRepository: ICategoryRepository,
   ) {}
 
-  async getAllCategories(): Promise<Category[]> {
-    return this.categoryRepository.findAll();
+  async findAll(paginationDto: PaginationDto): Promise<{ data: Category[]; total: number }> {
+    return this.categoryRepository.findAll(paginationDto);
   }
 
   async getCategoryById(id: number): Promise<Category> {

@@ -5,6 +5,7 @@ import { Review } from '../entities/review.entity';
 import { CreateReviewDto } from '../dtos/create-review.dto';
 import { UpdateReviewDto } from '../dtos/update-review.dto';
 import { EntityNotFoundException } from '../../common/exceptions/not-found.exception';
+import { PaginationDto } from 'src/common/dots/pagination.dto';
 
 @Injectable()
 export class ReviewService implements IReviewService {
@@ -12,8 +13,12 @@ export class ReviewService implements IReviewService {
     @Inject('IReviewRepository')
     private readonly reviewRepository: IReviewRepository) {}
 
-  async getAllReviews(): Promise<Review[]> {
-    return this.reviewRepository.findAll();
+  async findAll(paginationDto: PaginationDto): Promise<{ data: Review[]; total: number }> {
+    return this.reviewRepository.findAll(paginationDto);
+  }
+
+  async findByUserId(userId: number, paginationDto: PaginationDto): Promise<{ data: Review[]; total: number }> {
+    return this.reviewRepository.findByUserId(userId, paginationDto);
   }
 
   async getReviewById(id: number): Promise<Review> {

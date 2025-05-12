@@ -5,6 +5,7 @@ import { Instruction } from '../entities/instruction.entity';
 import { CreateInstructionDto } from '../dtos/create-instruction.dto';
 import { UpdateInstructionDto } from '../dtos/update-instruction.dto';
 import { EntityNotFoundException } from '../../common/exceptions/not-found.exception';
+import { PaginationDto } from 'src/common/dots/pagination.dto';
 
 @Injectable()
 export class InstructionService implements IInstructionService {
@@ -12,9 +13,9 @@ export class InstructionService implements IInstructionService {
     @Inject('IInstructionRepository')
     private readonly instructionRepository: IInstructionRepository) {}
 
-  async getAllInstructions(): Promise<Instruction[]> {
-    return this.instructionRepository.findAll();
-  }
+    async findAll(paginationDto: PaginationDto): Promise<{ data: Instruction[]; total: number }> {
+      return this.instructionRepository.findAll(paginationDto);
+    }
 
   async getInstructionById(id: number): Promise<Instruction> {
     const instruction = await this.instructionRepository.findById(id);

@@ -1,21 +1,32 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, ParseIntPipe, UsePipes, ValidationPipe, Inject } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, ParseIntPipe, UsePipes, ValidationPipe, Inject, Query } from '@nestjs/common';
 import { IInstructionService } from '../../common/interfaces/instruction.service.interface';
 import { Response } from '../../common/types/response.type';
 import { Instruction } from '../entities/instruction.entity';
 import { CreateInstructionDto } from '../dtos/create-instruction.dto';
 import { UpdateInstructionDto } from '../dtos/update-instruction.dto';
+import { PaginationDto } from 'src/common/dots/pagination.dto';
 
 @Controller('instructions')
 export class InstructionController {
   constructor(
     @Inject('IInstructionService')
     private readonly instructionService: IInstructionService) {}
-
-  @Get()
-  async getAllInstructions(): Promise<Response<Instruction[]>> {
-    const data = await this.instructionService.getAllInstructions();
-    return { data, message: 'Instructions retrieved successfully', code: 200 };
-  }
+    @Get()
+    @UsePipes(new ValidationPipe({ whitelist: true }))
+    async findAll(@Query() paginationDto: PaginationDto): Promise<Response<Instruction[]>> {
+      const { data, total } = await this.instructionService.findAll(paginationDto);
+      return {
+        data,
+        meta: {
+          total,
+          page: paginationDto.page ?? 1,
+          limit: paginationDto.limit ?? 10,
+          totalPages: Math.ceil(total / (paginationDto.limit ?? 10)),
+        },
+        message: 'Instructions retrieved successfully',
+        code: 200,
+      };
+    }
 
   @Get(':id')
   async getInstructionById(@Param('id', ParseIntPipe) id: number): Promise<Response<Instruction>> {
