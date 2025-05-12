@@ -4,6 +4,7 @@ import { Favorite } from '../entities/favorite.entity';
 import { CreateFavoriteDto } from '../dtos/create-favorite.dto';
 import { EntityNotFoundException } from '../../common/exceptions/not-found.exception';
 import { IFavoriteService } from 'src/common/interfaces/favorite.service.interface';
+import { PaginationDto } from 'src/common/dots/pagination.dto';
 
 @Injectable()
 export class FavoriteService implements IFavoriteService {
@@ -12,8 +13,8 @@ export class FavoriteService implements IFavoriteService {
     private readonly favoriteRepository: IFavoriteRepository,
   ) {}
 
-  async getAllFavorites(): Promise<Favorite[]> {
-    return this.favoriteRepository.findAll();
+  async getAllFavorites(paginationDto: PaginationDto): Promise<{ data: Favorite[]; total: number }> {
+    return this.favoriteRepository.findAll(paginationDto);
   }
 
   async findByUserId(userId: number): Promise<Favorite[]> {

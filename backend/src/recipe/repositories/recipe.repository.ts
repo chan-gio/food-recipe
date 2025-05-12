@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Recipe } from '../entities/recipe.entity';
 import { IRecipeRepository } from '../../common/interfaces/recipe.repository.interface';
+import { PaginationDto } from 'src/common/dots/pagination.dto';
 
 @Injectable()
 export class RecipeRepository implements IRecipeRepository {
@@ -13,11 +14,36 @@ export class RecipeRepository implements IRecipeRepository {
     private readonly recipeRepo: Repository<Recipe>,
   ) {}
 
-  async findAll(): Promise<Recipe[]> {
+  async findAll(paginationDto: PaginationDto): Promise<{ data: Recipe[]; total: number }> {
     try {
-      return await this.recipeRepo.find({
-        relations: ['user', 'ingredients', 'categories', 'instructions', 'reviews', 'favorites'],
+      const { page, limit } = paginationDto;
+      const skip = ((page ?? 1) - 1) * ( limit ?? 10);
+      const [data, total] = await this.recipeRepo.findAndCount({
+        skip,
+        take: limit,
+        relations: ['user', 'ingredients', 'categories', 'instructions', 'reviews', 'favorites', 'searches'],
       });
+      this.logger.log(`Fetched ${data.length} recipes (page ${page}, limit ${limit})`);
+      return { data, total };
+    } catch (error) {
+      this.logger.error(`Failed to fetch all recipes: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+
+  async findByUserId(userId: number, paginationDto: PaginationDto): Promise<{ data: Recipe[]; total: number }> {
+    try {
+      const { page, limit } = paginationDto;
+      const skip = ((page ?? 1) - 1) * ( limit ?? 10);
+      const [data, total] = await this.recipeRepo.findAndCount({
+        where: { user: { user_id: userId } },
+        skip,
+        take: limit,
+        relations: ['user', 'ingredients', 'categories', 'instructions', 'reviews', 'favorites', 'searches'],
+      });
+      this.logger.log(`Fetched ${data.length} recipes (page ${page}, limit ${limit})`);
+      return { data, total };
     } catch (error) {
       this.logger.error(`Failed to fetch all recipes: ${error.message}`, error.stack);
       throw error;

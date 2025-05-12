@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, ParseIntPipe, UsePipes, ValidationPipe, Inject } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, ParseIntPipe, UsePipes, ValidationPipe, Inject, Query } from '@nestjs/common';
 import { IReviewService } from '../../common/interfaces/review.service.interface';
 import { Response } from '../../common/types/response.type';
 import { Review } from '../entities/review.entity';
 import { CreateReviewDto } from '../dtos/create-review.dto';
 import { UpdateReviewDto } from '../dtos/update-review.dto';
+import { PaginationDto } from 'src/common/dots/pagination.dto';
 
 @Controller('reviews')
 export class ReviewController {
@@ -11,10 +12,41 @@ export class ReviewController {
     @Inject('IReviewService')
     private readonly reviewService: IReviewService) {}
 
-  @Get()
-  async getAllReviews(): Promise<Response<Review[]>> {
-    const data = await this.reviewService.getAllReviews();
-    return { data, message: 'Reviews retrieved successfully', code: 200 };
+    @Get()
+    @UsePipes(new ValidationPipe({ whitelist: true }))
+    async findAll(@Query() paginationDto: PaginationDto): Promise<Response<Review[]>> {
+      const { data, total } = await this.reviewService.findAll(paginationDto);
+      return {
+        data,
+        meta: {
+          total,
+          page: paginationDto.page ?? 1,
+          limit: paginationDto.limit ?? 10,
+          totalPages: Math.ceil(total / (paginationDto.limit ?? 10)),
+        },
+        message: 'Reviews retrieved successfully',
+        code: 200,
+      };
+    }
+
+  @Get('user/:userId')
+  @UsePipes(new ValidationPipe({ whitelist: true }))
+  async findByUserId(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Query() paginationDto: PaginationDto,
+  ): Promise<Response<Review[]>> {
+    const { data, total } = await this.reviewService.findByUserId(userId, paginationDto);
+    return {
+      data,
+      meta: {
+        total,
+        page: paginationDto.page ?? 1,
+        limit: paginationDto.limit ?? 10,
+        totalPages: Math.ceil(total / (paginationDto.limit ?? 10)),
+      },
+      message: 'Reviews retrieved successfully',
+      code: 200,
+    };
   }
 
   @Get(':id')

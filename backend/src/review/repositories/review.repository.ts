@@ -6,6 +6,7 @@ import { Recipe } from '../../recipe/entities/recipe.entity';
 import { User } from '../../user/entities/user.entity';
 import { IReviewRepository } from '../../common/interfaces/review.repository.interface';
 import { CreateReviewDto } from '../dtos/create-review.dto';
+import { PaginationDto } from 'src/common/dots/pagination.dto';
 
 @Injectable()
 export class ReviewRepository implements IReviewRepository {
@@ -20,13 +21,40 @@ export class ReviewRepository implements IReviewRepository {
     private readonly userRepo: Repository<User>,
   ) {}
 
-  async findAll(): Promise<Review[]> {
+  async findAll(paginationDto: PaginationDto): Promise<{ data: Review[]; total: number }> {
     try {
-      return await this.reviewRepo.find({
-        relations: ['recipe', 'user'],
+      const { page, limit } = paginationDto;
+      const skip = ((page ?? 1) - 1) * (limit ?? 10);
+      const [data, total] = await this.reviewRepo.findAndCount({
+        skip,
+        take: limit,
+        relations: ['user', 'recipe'],
       });
+      this.logger.log(`Fetched ${data.length} reviews (page ${page}, limit ${limit})`);
+      return { data, total };
     } catch (error) {
       this.logger.error(`Failed to fetch all reviews: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  async findByUserId(userId: number, paginationDto: PaginationDto): Promise<{ data: Review[]; total: number }> {
+    try {
+      const { page, limit } = paginationDto;
+      const skip = ((page ?? 1) - 1) * (limit ?? 10);
+      const query = this.reviewRepo.createQueryBuilder('Review')
+        .leftJoinAndSelect('Review.user', 'user')
+        .leftJoinAndSelect('Review.recipe', 'recipe')
+        .where('Review.user_id = :userId', { userId })
+        .skip(skip)
+        .take(limit)
+        .orderBy('Review.review_id', 'ASC');
+
+      const [data, total] = await query.getManyAndCount();
+      this.logger.log(`Fetched ${data.length} reviews for user ${userId} (page ${page}, limit ${limit})`);
+      return { data, total };
+    } catch (error) {
+      this.logger.error(`Failed to fetch reviews for user ${userId}: ${error.message}`, error.stack);
       throw error;
     }
   }

@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, ParseIntPipe, UsePipes, ValidationPipe, Query, Inject } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, ParseIntPipe, UsePipes, ValidationPipe, Query, Inject, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { UserService } from '../services/user.service';
 import { User } from '../entities/user.entity';
 import { CreateUserDto } from '../dtos/create-user.dto';
 import { Response } from '../../common/types/response.type';
 import { PaginationDto } from 'src/common/dots/pagination.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { UpdateUserDto } from '../dtos/update-user.dto';
 
 @Controller('users')
 export class UserController {
@@ -48,11 +50,20 @@ export class UserController {
     return { data, message: 'User created successfully', code: 201 };
   }
 
+  // @UseGuards(JwtAuthGuard)
   @Put(':id')
-  @UsePipes(new ValidationPipe({ whitelist: true }))
-  async update(@Param('id', ParseIntPipe) id: number, @Body() user: Partial<User>): Promise<Response<User>> {
-    const data = await this.userService.update(id, user);
-    return { data, message: 'User updated successfully', code: 200 };
+  @UseInterceptors(FileInterceptor('profile_picture'))
+  async update(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    const updatedUser = await this.userService.update(parseInt(id), updateUserDto, file);
+    return {
+      data: updatedUser,
+      message: 'User updated successfully',
+      code: 200,
+    };
   }
 
   @Delete(':id')

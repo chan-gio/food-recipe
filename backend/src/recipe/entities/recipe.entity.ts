@@ -43,23 +43,23 @@ export class Recipe {
   @JoinColumn({ name: 'user_id' })
   user: User | null;
 
-  @ManyToMany(() => Ingredient, (ingredient) => ingredient.recipes, { cascade: true })
+  @ManyToMany(() => Ingredient, (ingredient) => ingredient.recipes)
   @JoinTable({
     name: 'Has',
-    joinColumn: { name: 'recipe_id', referencedColumnName: 'recipe_id' },
-    inverseJoinColumn: { name: 'ingredient_id', referencedColumnName: 'ingredient_id' },
+    joinColumn: { name: 'recipe_id_for_ingredient', referencedColumnName: 'recipe_id' },
+    inverseJoinColumn: { name: 'ingredient_id_for_recipe', referencedColumnName: 'ingredient_id' },
   })
   ingredients: Ingredient[];
 
-  @ManyToMany(() => Category, (category) => category.recipes, { cascade: true })
+  @ManyToMany(() => Category, (category) => category.recipes)
   @JoinTable({
     name: 'RecipeCategory',
-    joinColumn: { name: 'recipe_id', referencedColumnName: 'recipe_id' },
-    inverseJoinColumn: { name: 'category_id', referencedColumnName: 'category_id' },
+    joinColumn: { name: 'recipe_id_for_category', referencedColumnName: 'recipe_id' },
+    inverseJoinColumn: { name: 'category_id_for_recipe', referencedColumnName: 'category_id' },
   })
   categories: Category[];
 
-  @OneToMany(() => Instruction, (instruction) => instruction.recipe, { cascade: true })
+  @OneToMany(() => Instruction, (instruction) => instruction.recipe)
   instructions: Instruction[];
 
   @OneToMany(() => Review, (review) => review.recipe, { cascade: true })

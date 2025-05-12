@@ -12,11 +12,13 @@ import { ReviewModule } from './review/review.module';
 import { FavoriteModule } from './favorite/favorite.module';
 import { SearchesModule } from './searches/searches.module';
 import { LoginModule } from './login/login.module';
+import { MulterModule } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ load: [databaseConfig], isGlobal: true }),
+    ConfigModule.forRoot({ load: [databaseConfig], isGlobal: true , envFilePath: '.env',}),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -34,6 +36,9 @@ import { LoginModule } from './login/login.module';
         retryDelay: 3000, 
       }),
     }),
+    MulterModule.register({
+      storage: memoryStorage(),
+    }),
     RecipeModule,
     CategoryModule,
     IngredientModule,
@@ -48,3 +53,4 @@ import { LoginModule } from './login/login.module';
 
 })
 export class AppModule {}
+

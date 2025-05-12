@@ -1,38 +1,63 @@
-import { IsString, IsOptional, IsInt, IsArray, ValidateNested } from 'class-validator';
+import { IsString, IsNotEmpty, IsInt, IsArray, IsOptional, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
+import { IngredientDto } from './ingredient.dto';
+import { CategoryDto } from './category.dto';
+import { InstructionDto } from './instruction.dto';
 
 export class CreateRecipeDto {
   @IsString()
+  @IsNotEmpty()
   recipe_name: string;
 
-  @IsOptional()
   @IsString()
-  description?: string;
+  @IsNotEmpty()
+  description: string;
 
-  @IsOptional()
   @IsString()
-  recipe_type?: string;
+  @IsNotEmpty()
+  recipe_type: string;
 
-  @IsOptional()
   @IsInt()
-  servings?: number;
+  @IsNotEmpty()
+  servings: number;
 
-  @IsOptional()
   @IsInt()
-  prep_time?: number;
+  @IsNotEmpty()
+  prep_time: number;
 
-  @IsOptional()
   @IsInt()
-  cook_time?: number;
+  @IsNotEmpty()
+  cook_time: number;
 
-  @IsOptional()
   @IsArray()
-  images?: string[];
-
+  @IsString({ each: true })
   @IsOptional()
+  images: string[];
+
   @IsArray()
-  videos?: string[];
+  @IsString({ each: true })
+  @IsOptional()
+  videos: string[];
 
   @IsInt()
-  user_id: number; 
+  @IsNotEmpty()
+  user_id: number;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => IngredientDto)
+  @IsOptional()
+  ingredients: IngredientDto[];
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CategoryDto)
+  @IsOptional()
+  categories: CategoryDto[];
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => InstructionDto)
+  @IsOptional()
+  instructions: InstructionDto[];
 }

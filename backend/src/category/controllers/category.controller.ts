@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, ParseIntPipe, UsePipes, ValidationPipe, UseInterceptors, UploadedFile, Inject } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, ParseIntPipe, UsePipes, ValidationPipe, UseInterceptors, UploadedFile, Inject, Query } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ICategoryService } from '../../common/interfaces/category.service.interface';
 import { Response } from '../../common/types/response.type';
@@ -6,6 +6,7 @@ import { Category } from '../entities/category.entity';
 import { CreateCategoryDto } from '../dtos/create-category.dto';
 import { UpdateCategoryDto } from '../dtos/update-category.dto';
 import { UploadMediaDto } from '../dtos/upload-media.dto';
+import { PaginationDto } from 'src/common/dots/pagination.dto';
 
 @Controller('categories')
 export class CategoryController {
@@ -13,11 +14,22 @@ export class CategoryController {
     @Inject('ICategoryService')
     private readonly categoryService: ICategoryService) {}
 
-  @Get()
-  async getAllCategories(): Promise<Response<Category[]>> {
-    const data = await this.categoryService.getAllCategories();
-    return { data, message: 'Categories retrieved successfully', code: 200 };
-  }
+    @Get()
+    @UsePipes(new ValidationPipe({ whitelist: true }))
+    async findAll(@Query() paginationDto: PaginationDto): Promise<Response<Category[]>> {
+      const { data, total } = await this.categoryService.findAll(paginationDto);
+      return {
+        data,
+        meta: {
+          total,
+          page: paginationDto.page ?? 1,
+          limit: paginationDto.limit ?? 10,
+          totalPages: Math.ceil(total / (paginationDto.limit ?? 10)),
+        },
+        message: 'Categories retrieved successfully',
+        code: 200,
+      };
+    }
 
   @Get(':id')
   async getCategoryById(@Param('id', ParseIntPipe) id: number): Promise<Response<Category>> {

@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Favorite } from '../entities/favorite.entity';
 import { IFavoriteRepository } from '../../common/interfaces/favorite.repository.interface';
+import { PaginationDto } from 'src/common/dots/pagination.dto';
 
 @Injectable()
 export class FavoriteRepository implements IFavoriteRepository {
@@ -13,9 +14,17 @@ export class FavoriteRepository implements IFavoriteRepository {
     private readonly favoriteRepo: Repository<Favorite>,
   ) {}
 
-  async findAll(): Promise<Favorite[]> {
+  async findAll(paginationDto: PaginationDto): Promise<{ data: Favorite[]; total: number }> {
     try {
-      return await this.favoriteRepo.find({ relations: ['user', 'recipe'] });
+      const { page = 1, limit } = paginationDto;
+      const skip = (page - 1) * (limit ?? 10);
+      const [data, total] = await this.favoriteRepo.findAndCount({
+        skip,
+        take: limit,
+        relations: ['user', 'recipe'],
+      });
+      this.logger.log(`Fetched ${data.length} favorites (page ${page}, limit ${limit})`);
+      return { data, total };
     } catch (error) {
       this.logger.error(`Failed to fetch all favorites: ${error.message}`, error.stack);
       throw error;
