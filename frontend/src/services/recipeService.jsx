@@ -35,19 +35,18 @@ class RecipeService {
   async createRecipe(dto, files = {}) {
     try {
       const formData = new FormData();
+      // Append the recipe data as a stringified JSON
       formData.append('dto', JSON.stringify(dto));
 
-      // Add image files if provided
+      // Append all files (images and videos) under the 'files' key
       if (files.images && files.images.length > 0) {
-        files.images.forEach((file, index) => {
-          formData.append(`images[${index}]`, file);
+        files.images.forEach((file) => {
+          formData.append('files', file); // Use 'files' key as expected by FilesInterceptor
         });
       }
-
-      // Add video files if provided
       if (files.videos && files.videos.length > 0) {
-        files.videos.forEach((file, index) => {
-          formData.append(`videos[${index}]`, file);
+        files.videos.forEach((file) => {
+          formData.append('files', file); // Use 'files' key as expected by FilesInterceptor
         });
       }
 
@@ -66,19 +65,18 @@ class RecipeService {
   async updateRecipe(id, dto, files = {}) {
     try {
       const formData = new FormData();
+      // Append the recipe data as a stringified JSON
       formData.append('dto', JSON.stringify(dto));
 
-      // Add image files if provided
+      // Append all files (images and videos) under the 'files' key
       if (files.images && files.images.length > 0) {
-        files.images.forEach((file, index) => {
-          formData.append(`images[${index}]`, file);
+        files.images.forEach((file) => {
+          formData.append('files', file); // Use 'files' key as expected by FilesInterceptor
         });
       }
-
-      // Add video files if provided
       if (files.videos && files.videos.length > 0) {
-        files.videos.forEach((file, index) => {
-          formData.append(`videos[${index}]`, file);
+        files.videos.forEach((file) => {
+          formData.append('files', file); // Use 'files' key as expected by FilesInterceptor
         });
       }
 
