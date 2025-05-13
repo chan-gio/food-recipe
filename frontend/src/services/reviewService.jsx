@@ -19,6 +19,15 @@ class ReviewService {
     }
   }
 
+  async getReviewsByRecipeId(recipeId, params = {}) {
+    try {
+      const response = await api.get(`/reviews/recipe/${recipeId}`, { params });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Failed to fetch reviews for recipe');
+    }
+  }
+
   async getReviewById(id) {
     try {
       const response = await api.get(`/reviews/${id}`);

@@ -44,6 +44,16 @@ const debounce = (func, wait) => {
 const { Title } = Typography;
 const { TextArea } = Input;
 
+// Predefined ingredient types for the dropdown
+const INGREDIENT_TYPES = [
+  { label: "Vegetable", value: "Vegetable" },
+  { label: "Meat", value: "Meat" },
+  { label: "Spice", value: "Spice" },
+  { label: "Grain", value: "Grain" },
+  { label: "Dairy", value: "Dairy" },
+  { label: "Other", value: "Other" },
+];
+
 const RecipeForm = () => {
   const [form] = Form.useForm();
   const { id } = useParams();
@@ -53,9 +63,9 @@ const RecipeForm = () => {
   const [loading, setLoading] = useState(isEditMode);
   const [fileList, setFileList] = useState({ images: [], videos: [] });
   const [instructions, setInstructions] = useState([]);
-  const [ingredients, setIngredients] = useState([]); // Stores { ingredient_id, ingredient_name, amount, unit }
+  const [ingredients, setIngredients] = useState([]); // Stores { ingredient_id, ingredient_name, ingredient_type, amount, unit }
   const [categoryOptions, setCategoryOptions] = useState([]); // Stores { label, value, id }
-  const [ingredientOptions, setIngredientOptions] = useState([]); // Stores { value, id } for AutoComplete
+  const [ingredientOptions, setIngredientOptions] = useState([]); // Stores { value, label, id } for AutoComplete
   const [currentIngredientIndex, setCurrentIngredientIndex] = useState(null);
   const [fetchedCategories, setFetchedCategories] = useState([]); // Stores { category_name, category_id }
   const [fetchedIngredients, setFetchedIngredients] = useState([]); // Stores { ingredient_name, ingredient_id }
@@ -77,8 +87,6 @@ const RecipeForm = () => {
             prep_time: recipeData.prep_time,
             cook_time: recipeData.cook_time,
             categories: recipeData.categories.map(cat => cat.category_name),
-            images: [],
-            videos: [],
           });
 
           // Set local state for instructions and ingredients
@@ -89,6 +97,7 @@ const RecipeForm = () => {
           setIngredients(recipeData.ingredients.map(ingredient => ({
             ingredient_id: ingredient.ingredient_id,
             ingredient_name: ingredient.ingredient_name,
+            ingredient_type: ingredient.ingredient_type || "Other", // Default to "Other" if not provided
             amount: ingredient.amount,
             unit: ingredient.unit,
           })));
@@ -169,14 +178,14 @@ const RecipeForm = () => {
         ingredient_id: item.ingredient_id,
       }));
 
-      // Remove duplicates by ingredient_id (most unique identifier)
+      // Remove duplicates by ingredient_name (case-insensitive)
       const uniqueIngredients = Array.from(
-        new Map(ingredients.map(ing => [ing.ingredient_id, ing])).values()
+        new Map(ingredients.map(ing => [ing.ingredient_name.toLowerCase(), ing])).values()
       );
 
       const newOptions = uniqueIngredients.map(ing => ({
         value: ing.ingredient_name,
-        label: ing.ingredient_name, // Add label for display
+        label: ing.ingredient_name,
         id: ing.ingredient_id,
       }));
 
@@ -217,7 +226,13 @@ const RecipeForm = () => {
 
   // Add a new ingredient
   const addIngredient = () => {
-    const newIngredient = { ingredient_id: null, ingredient_name: "", amount: null, unit: "" };
+    const newIngredient = { 
+      ingredient_id: null, 
+      ingredient_name: "", 
+      ingredient_type: "Other", // Default type
+      amount: null, 
+      unit: "" 
+    };
     const newIngredients = [...ingredients, newIngredient];
     setIngredients(newIngredients);
     form.setFieldsValue({ ingredients: newIngredients });
@@ -237,7 +252,11 @@ const RecipeForm = () => {
     const newIngredients = [...ingredients];
     newIngredients[index] = { ...newIngredients[index], [field]: value };
     setIngredients(newIngredients);
-    form.setFieldsValue({ ingredients: newIngredients });
+    console.log(`Updated ingredient at index ${index}:`, newIngredients[index]);
+    // Update the form field for amount and unit, but not for ingredient_name or ingredient_type
+    if (field !== "ingredient_name" && field !== "ingredient_type") {
+      form.setFieldsValue({ ingredients: newIngredients });
+    }
   };
 
   // Handle ingredient creation when the confirm button is clicked
@@ -247,40 +266,81 @@ const RecipeForm = () => {
       return;
     }
 
-    const existingIngredient = fetchedIngredients.find(ing => ing.ingredient_name.toLowerCase() === value.toLowerCase());
-    if (existingIngredient) {
-      updateIngredient(index, "ingredient_id", existingIngredient.ingredient_id);
-      updateIngredient(index, "ingredient_name", existingIngredient.ingredient_name);
-      message.success(`Ingredient "${existingIngredient.ingredient_name}" selected.`);
-    } else {
-      try {
-        const response = await ingredientService.createIngredient({ ingredient_name: value });
-        const newIngredient = {
+    const ingredient = ingredients[index];
+    const { ingredient_type, amount, unit } = ingredient;
+
+    // Validate required fields
+    if (!ingredient_type) {
+      message.error("Please select an ingredient type.");
+      return;
+    }
+    if (amount === null || amount === undefined) {
+      message.error("Please enter an amount for the ingredient.");
+      return;
+    }
+    if (!unit || unit.trim() === "") {
+      message.error("Please enter a unit for the ingredient.");
+      return;
+    }
+
+    try {
+      // Always create a new ingredient, regardless of whether it exists
+      const response = await ingredientService.createIngredient({
+        ingredient_name: value,
+        ingredient_type,
+        amount,
+        unit,
+      });
+      const newIngredient = {
+        ingredient_name: value,
+        ingredient_id: response.data.ingredient_id, // Assuming the response includes the new ingredient_id
+      };
+      // Update fetchedIngredients and ingredientOptions for autocomplete
+      setFetchedIngredients(prev => {
+        const updated = [...prev, newIngredient];
+        return Array.from(
+          new Map(updated.map(ing => [ing.ingredient_name.toLowerCase(), ing])).values()
+        );
+      });
+      setIngredientOptions(prev => {
+        const updated = [...prev, { value: value, label: value, id: newIngredient.ingredient_id }];
+        return Array.from(
+          new Map(updated.map(opt => [opt.value.toLowerCase(), opt])).values()
+        );
+      });
+      // Update the ingredient state with the new ingredient's ID and name in a single state update
+      setIngredients(prevIngredients => {
+        const newIngredients = [...prevIngredients];
+        newIngredients[index] = {
+          ...newIngredients[index],
+          ingredient_id: newIngredient.ingredient_id,
           ingredient_name: value,
-          ingredient_id: response.data.ingredient_id, // Assuming the response includes the new ingredient_id
         };
-        setFetchedIngredients(prev => {
-          const updated = [...prev, newIngredient];
-          return Array.from(
-            new Map(updated.map(ing => [ing.ingredient_id, ing])).values()
-          );
-        });
-        setIngredientOptions(prev => {
-          const updated = [...prev, { value: value, label: value, id: newIngredient.ingredient_id }];
-          return Array.from(
-            new Map(updated.map(opt => [opt.id, opt])).values()
-          );
-        });
-        updateIngredient(index, "ingredient_id", newIngredient.ingredient_id);
-        updateIngredient(index, "ingredient_name", value);
-        message.success(`Ingredient "${value}" created successfully.`);
-      } catch (err) {
-        message.error(`Failed to create ingredient "${value}": ${err.message}`);
-      }
+        console.log(`Created new ingredient at index ${index}:`, newIngredients[index]);
+        return newIngredients;
+      });
+      message.success(`Ingredient "${value}" created successfully.`);
+    } catch (err) {
+      message.error(`Failed to create ingredient "${value}": ${err.message}`);
     }
   };
 
   const handleFileChange = (type) => ({ fileList: newFileList }) => {
+    // Define limits
+    const imageLimit = 5;
+    const videoLimit = 1;
+
+    // Check limits based on type
+    if (type === 'images' && newFileList.length > imageLimit) {
+      message.error(`You can only upload up to ${imageLimit} images.`);
+      return; // Prevent updating the fileList
+    }
+    if (type === 'videos' && newFileList.length > videoLimit) {
+      message.error(`You can only upload up to ${videoLimit} video.`);
+      return; // Prevent updating the fileList
+    }
+
+    // Update the fileList if within limits
     setFileList(prev => ({ ...prev, [type]: newFileList }));
   };
 
@@ -291,14 +351,43 @@ const RecipeForm = () => {
     }
 
     try {
-      // Process ingredients: Filter out invalid entries and include amount and unit
+      // Log the current ingredients state for debugging
+      console.log("Ingredients state before submission:", ingredients);
+
+      // Validate ingredients only if there are any
+      if (ingredients.length > 0) {
+        for (let i = 0; i < ingredients.length; i++) {
+          const ingredient = ingredients[i];
+          if (!ingredient.ingredient_name || ingredient.ingredient_name.trim() === "") {
+            message.error(`Please enter a name for ingredient ${i + 1}`);
+            return;
+          }
+          if (!ingredient.ingredient_type) {
+            message.error(`Please select a type for ingredient ${i + 1}`);
+            return;
+          }
+          if (ingredient.amount === null || ingredient.amount === undefined) {
+            message.error(`Please enter an amount for ingredient ${i + 1}`);
+            return;
+          }
+          if (!ingredient.unit || ingredient.unit.trim() === "") {
+            message.error(`Please enter a unit for ingredient ${i + 1}`);
+            return;
+          }
+          if (!ingredient.ingredient_id) {
+            message.error(`Please create or select ingredient ${i + 1} by clicking the checkmark button`);
+            return;
+          }
+        }
+      }
+
+      // Process ingredients: Filter out invalid entries and include only ingredient_id
       const processedIngredients = ingredients
         .filter(ingredient => ingredient.ingredient_id && ingredient.ingredient_name && ingredient.ingredient_name.trim() !== "")
         .map(ingredient => ({
           ingredient_id: ingredient.ingredient_id,
-          amount: ingredient.amount || 0,
-          unit: ingredient.unit || "",
         }));
+      console.log("Processed ingredients:", processedIngredients);
 
       // Process categories: Format with only category_id
       const processedCategories = selectedCategories
@@ -306,6 +395,7 @@ const RecipeForm = () => {
         .map(cat => ({
           category_id: cat.category_id,
         }));
+      console.log("Processed categories:", processedCategories);
 
       // Process instructions: Filter out invalid entries
       const processedInstructions = instructions
@@ -314,6 +404,19 @@ const RecipeForm = () => {
           step_number: instruction.step_number,
           description: instruction.description,
         }));
+      console.log("Processed instructions:", processedInstructions);
+
+      // Process images: Include existing image URLs (not being replaced) in recipeData
+      const existingImages = fileList.images
+        .filter(file => !file.originFileObj) // Only include images that are not new uploads (i.e., already have URLs)
+        .map(file => file.url);
+      console.log("Existing images (URLs):", existingImages);
+
+      // Process videos: Include existing video URLs (not being replaced) in recipeData
+      const existingVideos = fileList.videos
+        .filter(file => !file.originFileObj) // Only include videos that are not new uploads (i.e., already have URLs)
+        .map(file => file.url);
+      console.log("Existing videos (URLs):", existingVideos);
 
       // Prepare the recipe data for the API
       const recipeData = {
@@ -323,6 +426,8 @@ const RecipeForm = () => {
         servings: values.servings || 1,
         prep_time: values.prep_time || 0,
         cook_time: values.cook_time || 0,
+        images: existingImages, // Include existing image URLs
+        videos: existingVideos, // Include existing video URLs
         ingredients: processedIngredients,
         instructions: processedInstructions,
         categories: processedCategories,
@@ -332,15 +437,16 @@ const RecipeForm = () => {
       // Log the payload for debugging
       console.log("Submitting recipe data:", recipeData);
 
-      // Prepare files for upload
+      // Prepare files for upload (new images and videos)
       const files = {
         images: fileList.images
-          .filter(file => file.originFileObj)
+          .filter(file => file.originFileObj) // Only include new uploads
           .map(file => file.originFileObj),
         videos: fileList.videos
-          .filter(file => file.originFileObj)
+          .filter(file => file.originFileObj) // Only include new uploads
           .map(file => file.originFileObj),
       };
+      console.log("Files for upload:", files);
 
       if (isEditMode) {
         await recipeService.updateRecipe(id, recipeData, files);
@@ -532,33 +638,37 @@ const RecipeForm = () => {
                 </div>
               )}
             </div>
-            <Form.Item name="images">
-              <Upload
-                listType="picture-card"
-                fileList={fileList.images}
-                onChange={handleFileChange('images')}
-                beforeUpload={() => false}
-                multiple
-                className={styles.upload}
-              >
+            {/* Use maxCount to limit the number of images to 5 */}
+            <Upload
+              listType="picture-card"
+              fileList={fileList.images}
+              onChange={handleFileChange('images')}
+              beforeUpload={() => false}
+              multiple
+              maxCount={5} // Limit to 5 images
+              className={styles.upload}
+            >
+              {fileList.images.length < 5 && (
                 <div>
                   <PictureOutlined />
                   <div>Add Images</div>
                 </div>
-              </Upload>
-            </Form.Item>
-            <Form.Item name="videos">
-              <Upload
-                fileList={fileList.videos}
-                onChange={handleFileChange('videos')}
-                beforeUpload={() => false}
-                multiple
-                accept="video/mp4"
-                className={styles.uploadVideos}
-              >
-                <Button icon={<UploadOutlined />}>Select Videos</Button>
-              </Upload>
-            </Form.Item>
+              )}
+            </Upload>
+            {/* Use maxCount to limit the number of videos to 1 */}
+            <Upload
+              fileList={fileList.videos}
+              onChange={handleFileChange('videos')}
+              beforeUpload={() => false}
+              multiple={false} // Prevent multiple selection
+              maxCount={1} // Limit to 1 video
+              accept="video/mp4"
+              className={styles.uploadVideos}
+            >
+              {fileList.videos.length < 1 && (
+                <Button icon={<UploadOutlined />}>Select Video</Button>
+              )}
+            </Upload>
             {fileList.videos && fileList.videos.length > 0 && (
               <div className={styles.videoContainer}>
                 {fileList.videos.map((file, index) => (
@@ -665,42 +775,38 @@ const RecipeForm = () => {
                 {ingredients.map((ingredient, index) => (
                   <li key={index} className={styles.ingredientItem}>
                     <Space align="center">
-                      <Form.Item
-                        name={["ingredients", index, "ingredient_name"]}
-                        initialValue={ingredient.ingredient_name}
-                        rules={[{ required: true, message: "Ingredient name is required" }]}
-                      >
-                        <AutoComplete
-                          className={styles.ingredientNameInput}
-                          onSearch={(value) => fetchIngredients(value, index)}
-                          onFocus={() => {
-                            setCurrentIngredientIndex(index);
-                            fetchIngredients("", index);
-                          }}
-                          onChange={(value) => updateIngredient(index, "ingredient_name", value)}
-                          onSelect={(value, option) => {
-                            const selectedIngredient = fetchedIngredients.find(ing => ing.ingredient_name === value);
-                            if (selectedIngredient) {
-                              updateIngredient(index, "ingredient_id", selectedIngredient.ingredient_id);
-                              updateIngredient(index, "ingredient_name", value);
-                            }
-                          }}
-                          options={ingredientOptions.map(option => ({
-                            value: option.value,
-                            label: option.label, // Use label for display
-                          }))}
-                          value={ingredient.ingredient_name}
-                          placeholder="Ingredient name"
-                          allowClear
-                          filterOption={(inputValue, option) =>
-                            option.value.toLowerCase().includes(inputValue.toLowerCase())
+                      <AutoComplete
+                        className={styles.ingredientNameInput}
+                        onSearch={(value) => fetchIngredients(value, index)}
+                        onFocus={() => {
+                          setCurrentIngredientIndex(index);
+                          fetchIngredients("", index);
+                        }}
+                        onChange={(value) => updateIngredient(index, "ingredient_name", value)}
+                        onSelect={(value, option) => {
+                          const selectedIngredient = fetchedIngredients.find(ing => ing.ingredient_name === value);
+                          if (selectedIngredient) {
+                            updateIngredient(index, "ingredient_id", selectedIngredient.ingredient_id);
+                            updateIngredient(index, "ingredient_name", value);
                           }
-                        />
-                      </Form.Item>
-                      <Button
-                        icon={<CheckOutlined />}
-                        onClick={() => handleIngredientCreation(index, ingredient.ingredient_name)}
-                        style={{ color: '#52c41a' }}
+                        }}
+                        options={ingredientOptions.map(option => ({
+                          value: option.value,
+                          label: option.label,
+                        }))}
+                        value={ingredient.ingredient_name}
+                        placeholder="Ingredient name"
+                        allowClear
+                        filterOption={(inputValue, option) =>
+                          option.value.toLowerCase().includes(inputValue.toLowerCase())
+                        }
+                      />
+                      <Select
+                        className={styles.ingredientTypeInput}
+                        value={ingredient.ingredient_type}
+                        onChange={(value) => updateIngredient(index, "ingredient_type", value)}
+                        placeholder="Type"
+                        options={INGREDIENT_TYPES}
                       />
                       <Form.Item
                         name={["ingredients", index, "amount"]}
@@ -725,6 +831,11 @@ const RecipeForm = () => {
                           onChange={(e) => updateIngredient(index, "unit", e.target.value)}
                         />
                       </Form.Item>
+                      <Button
+                        icon={<CheckOutlined />}
+                        onClick={() => handleIngredientCreation(index, ingredient.ingredient_name)}
+                        style={{ color: '#52c41a' }}
+                      />
                       <Button
                         icon={<MinusCircleOutlined />}
                         onClick={() => removeIngredient(index)}

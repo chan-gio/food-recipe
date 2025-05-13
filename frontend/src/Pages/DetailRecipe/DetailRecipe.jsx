@@ -11,7 +11,7 @@ import {
   Modal,
   message,
   Carousel,
-  Skeleton, // Import Skeleton component
+  Skeleton,
 } from "antd";
 import {
   BookOutlined,
@@ -22,6 +22,8 @@ import {
   MinusOutlined,
   HeartOutlined,
   HeartFilled,
+  DownOutlined,
+  UpOutlined,
 } from "@ant-design/icons";
 import { useParams } from "react-router-dom";
 import { recipeService } from "../../services/recipeService";
@@ -37,13 +39,19 @@ const DetailRecipe = () => {
   const { id } = useParams();
   const { isAuthenticated, userId } = useAuth();
   const [recipe, setRecipe] = useState(null);
+  const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingReviews, setLoadingReviews] = useState(true);
   const [error, setError] = useState("");
+  const [errorReviews, setErrorReviews] = useState("");
   const [isReviewModalVisible, setIsReviewModalVisible] = useState(false);
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
   const [servings, setServings] = useState(1);
   const [isFavorited, setIsFavorited] = useState(false);
+  const [isReplyModalVisible, setIsReplyModalVisible] = useState(false);
+  const [parentReviewId, setParentReviewId] = useState(null);
+  const [expandedReplies, setExpandedReplies] = useState({});
 
   // Fetch recipe data
   useEffect(() => {
@@ -55,7 +63,6 @@ const DetailRecipe = () => {
         setRecipe(recipeData);
         setServings(recipeData.servings || 1);
 
-        // Check if the recipe is favorited by the user
         if (isAuthenticated && userId) {
           const favoritesResponse = await favoriteService.getFavoritesByUserId(userId);
           const isFav = favoritesResponse.data.some(fav => fav.recipe_id === parseInt(id));
@@ -71,19 +78,47 @@ const DetailRecipe = () => {
     fetchRecipe();
   }, [id, isAuthenticated, userId]);
 
-  // Handle review submission
+  // Fetch reviews separately
+  useEffect(() => {
+    const fetchReviews = async () => {
+      setLoadingReviews(true);
+      try {
+        const response = await reviewService.getReviewsByRecipeId(id, { page: 1, limit: 10 });
+        setReviews(response.data || []);
+      } catch (err) {
+        setErrorReviews(err.message);
+      } finally {
+        setLoadingReviews(false);
+      }
+    };
+
+    fetchReviews();
+  }, [id]);
+
   const handleWriteReview = () => {
     if (!isAuthenticated) {
       message.error("Please log in to write a review");
       return;
     }
+    setParentReviewId(null);
     setIsReviewModalVisible(true);
   };
 
-  const handleModalOk = async () => {
-    if (rating === 0) {
-      message.error("Please provide a rating");
+  const handleReplyReview = (reviewId) => {
+    if (!isAuthenticated) {
+      message.error("Please log in to reply to a review");
       return;
+    }
+    setParentReviewId(reviewId);
+    setIsReplyModalVisible(true);
+  };
+
+  const handleModalOk = async () => {
+    if (parentReviewId === null) {
+      if (rating === 0) {
+        message.error("Please provide a rating");
+        return;
+      }
     }
     if (!reviewText.trim()) {
       message.error("Please write a review");
@@ -91,20 +126,30 @@ const DetailRecipe = () => {
     }
 
     try {
-      await reviewService.createReview({
+      const reviewData = {
         recipe_id: parseInt(id),
-        user_id: userId,
-        rating,
+        user_id: parseInt(userId),
         comment: reviewText,
-      });
-      message.success("Review submitted successfully");
+      };
+
+      if (parentReviewId === null) {
+        reviewData.rating = rating;
+      } else {
+        reviewData.parent_review_id = parentReviewId;
+        reviewData.rating = rating > 0 ? rating : null;
+      }
+
+      await reviewService.createReview(reviewData);
+      message.success(parentReviewId === null ? "Review submitted successfully" : "Reply submitted successfully");
       setIsReviewModalVisible(false);
+      setIsReplyModalVisible(false);
       setRating(0);
       setReviewText("");
+      setParentReviewId(null);
 
-      // Refresh recipe to get updated reviews
-      const response = await recipeService.getRecipeById(id);
-      setRecipe(response.data);
+      // Refresh reviews
+      const response = await reviewService.getReviewsByRecipeId(id, { page: 1, limit: 10 });
+      setReviews(response.data || []);
     } catch (err) {
       message.error(err.message);
     }
@@ -112,11 +157,12 @@ const DetailRecipe = () => {
 
   const handleModalCancel = () => {
     setIsReviewModalVisible(false);
+    setIsReplyModalVisible(false);
     setRating(0);
     setReviewText("");
+    setParentReviewId(null);
   };
 
-  // Handle serving size adjustment
   const handleServingsChange = (increment) => {
     setServings((prev) => {
       const newServings = increment ? prev + 1 : prev - 1;
@@ -124,7 +170,6 @@ const DetailRecipe = () => {
     });
   };
 
-  // Handle favoriting/unfavoriting
   const handleFavoriteToggle = async () => {
     if (!isAuthenticated) {
       message.error("Please log in to favorite this recipe");
@@ -147,6 +192,63 @@ const DetailRecipe = () => {
     } catch (err) {
       message.error(err.message);
     }
+  };
+
+  const toggleReplies = (reviewId) => {
+    setExpandedReplies((prev) => ({
+      ...prev,
+      [reviewId]: !prev[reviewId],
+    }));
+  };
+
+  const ReviewItem = ({ review, level = 0 }) => {
+    const hasReplies = review.replies && review.replies.length > 0;
+    const isExpanded = expandedReplies[review.review_id] || false;
+
+    return (
+      <div className={`${styles.review} ${level === 0 ? styles.topLevelReview : styles.replyReview}`}>
+        <div className={styles.reviewHeader}>
+          <Avatar
+            size={32}
+            src={review.user?.profile_picture || "https://randomuser.me/api/portraits/women/2.jpg"}
+          />
+          <Rate disabled value={review.rating || 0} className={styles.reviewRating} />
+          <div className={styles.reviewDots}>...</div>
+        </div>
+        <p className={styles.reviewContent}>{review.comment}</p>
+        <div className={styles.reviewFooter}>
+          <span className={styles.reviewer}>{review.user?.full_name || "Anonymous"}</span>
+          <span className={styles.timestamp}>
+            {dayjs(review.created_at).format("MMMM Do YYYY, h:mm a")}
+          </span>
+          <Button
+            type="link"
+            className={styles.replyButton}
+            onClick={() => handleReplyReview(review.review_id)}
+          >
+            Reply
+          </Button>
+          {hasReplies && (
+            <Button
+              type="link"
+              className={styles.toggleRepliesButton}
+              onClick={() => toggleReplies(review.review_id)}
+              icon={isExpanded ? <UpOutlined /> : <DownOutlined />}
+            >
+              {isExpanded ? `Hide Replies (${review.replies.length})` : `Show Replies (${review.replies.length})`}
+            </Button>
+          )}
+        </div>
+        {hasReplies && isExpanded && (
+          <div className={styles.replies}>
+            {review.replies.map((reply) => (
+              <ReviewItem key={reply.review_id} review={reply} level={level + 1} />
+            ))}
+          </div>
+        )}
+        <Divider className={styles.reviewDivider} />
+      </div>
+    );
   };
 
   if (loading) {
@@ -191,12 +293,13 @@ const DetailRecipe = () => {
     return <div className={styles.container}>Recipe not found</div>;
   }
 
-  // Calculate average rating
-  const averageRating = recipe.reviews && recipe.reviews.length > 0
-    ? recipe.reviews.reduce((sum, review) => sum + review.rating, 0) / recipe.reviews.length
+  const averageRating = reviews && reviews.length > 0
+    ? reviews
+        .filter(review => !review.parent)
+        .reduce((sum, review) => sum + (review.rating || 0), 0) /
+        reviews.filter(review => !review.parent).length
     : 0;
 
-  // Scale ingredient amounts based on servings
   const servingMultiplier = servings / (recipe.servings || 1);
   const scaledIngredients = recipe.ingredients.map(ingredient => ({
     ...ingredient,
@@ -205,15 +308,22 @@ const DetailRecipe = () => {
 
   return (
     <div className={styles.container}>
+      {recipe.categories && recipe.categories.length > 0 && (
+        <div className={styles.units}>
+          <span>CATEGORY: {recipe.categories.map(cat => cat.category_name).join(', ')}</span>
+        </div>
+      )}
       <h1 className={styles.title}>{recipe.recipe_name}</h1>
       <div className={styles.rating}>
         <Rate disabled value={averageRating} />
-        <span className={styles.reviewCount}>({recipe.reviews?.length || 0})</span>
+        <span className={styles.reviewCount}>
+          ({reviews?.filter(review => !review.parent).length || 0})
+        </span>
       </div>
       <div className={styles.submitted}>
         <Avatar
           size={32}
-          src={recipe.user?.profile_picture || "https://randomuser.me/api/portraits/women/1.jpg"}
+          src={reviews.user?.profile_picture || "https://randomuser.me/api/portraits/women/1.jpg"}
         />
         <span className={styles.submittedText}>{recipe.user?.full_name || "Unknown User"}</span>
         <div className={styles.dots}>...</div>
@@ -309,11 +419,6 @@ const DetailRecipe = () => {
         </div>
         <div className={styles.ingredients}>
           <h2 className={styles.sectionTitle}>INGREDIENTS</h2>
-          {recipe.categories && recipe.categories.length > 0 && (
-            <div className={styles.units}>
-              <span>CATEGORY: {recipe.categories.map(cat => cat.category_name).join(', ')}</span>
-            </div>
-          )}
           <ul className={styles.ingredientList}>
             {scaledIngredients && scaledIngredients.length > 0 ? (
               scaledIngredients.map((ingredient, index) => (
@@ -346,21 +451,23 @@ const DetailRecipe = () => {
         </div>
 
         <Modal
-          title="Write a Review"
-          visible={isReviewModalVisible}
+          title={parentReviewId === null ? "Write a Review" : "Write a Reply"}
+          visible={isReviewModalVisible || isReplyModalVisible}
           onOk={handleModalOk}
           onCancel={handleModalCancel}
           okText="Submit"
           cancelText="Cancel"
         >
           <div className={styles.reviewModal}>
-            <div className={styles.ratingSection}>
-              <span className={styles.ratingLabel}>Your Rating:</span>
-              <Rate value={rating} onChange={setRating} />
-            </div>
+            {parentReviewId === null && (
+              <div className={styles.ratingSection}>
+                <span className={styles.ratingLabel}>Your Rating:</span>
+                <Rate value={rating} onChange={setRating} />
+              </div>
+            )}
             <TextArea
               rows={4}
-              placeholder="Write your review here..."
+              placeholder={parentReviewId === null ? "Write your review here..." : "Write your reply here..."}
               value={reviewText}
               onChange={(e) => setReviewText(e.target.value)}
               className={styles.reviewInput}
@@ -368,26 +475,17 @@ const DetailRecipe = () => {
           </div>
         </Modal>
 
-        {recipe.reviews && recipe.reviews.length > 0 ? (
-          recipe.reviews.map((review, index) => (
-            <div className={styles.review} key={index}>
-              <div className={styles.reviewHeader}>
-                <Avatar
-                  size={32}
-                  src={review.user?.profile_picture || "https://randomuser.me/api/portraits/women/2.jpg"}
-                />
-                <Rate disabled value={review.rating} className={styles.reviewRating} />
-                <div className={styles.reviewDots}>...</div>
-              </div>
-              <p className={styles.reviewContent}>{review.comment}</p>
-              <div className={styles.reviewFooter}>
-                <span className={styles.reviewer}>{review.user?.full_name || "Anonymous"}</span>
-                <span className={styles.timestamp}>
-                  {dayjs(review.created_at).format("MMMM Do YYYY, h:mm a")}
-                </span>
-              </div>
-              <Divider className={styles.reviewDivider} />
-            </div>
+        {loadingReviews ? (
+          <div className={styles.skeletonReviewsSection}>
+            <Skeleton active title={{ width: '20%' }} paragraph={false} />
+            <Skeleton active avatar paragraph={{ rows: 2, width: ['80%', '60%'] }} />
+            <Skeleton active avatar paragraph={{ rows: 2, width: ['80%', '60%'] }} />
+          </div>
+        ) : errorReviews ? (
+          <p>Error loading reviews: {errorReviews}</p>
+        ) : reviews && reviews.length > 0 ? (
+          reviews.map((review) => (
+            <ReviewItem key={review.review_id} review={review} level={0} />
           ))
         ) : (
           <p>No reviews yet. Be the first to write one!</p>
