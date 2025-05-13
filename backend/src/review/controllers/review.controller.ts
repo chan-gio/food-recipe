@@ -10,24 +10,25 @@ import { PaginationDto } from 'src/common/dots/pagination.dto';
 export class ReviewController {
   constructor(
     @Inject('IReviewService')
-    private readonly reviewService: IReviewService) {}
+    private readonly reviewService: IReviewService,
+  ) {}
 
-    @Get()
-    @UsePipes(new ValidationPipe({ whitelist: true }))
-    async findAll(@Query() paginationDto: PaginationDto): Promise<Response<Review[]>> {
-      const { data, total } = await this.reviewService.findAll(paginationDto);
-      return {
-        data,
-        meta: {
-          total,
-          page: paginationDto.page ?? 1,
-          limit: paginationDto.limit ?? 10,
-          totalPages: Math.ceil(total / (paginationDto.limit ?? 10)),
-        },
-        message: 'Reviews retrieved successfully',
-        code: 200,
-      };
-    }
+  @Get()
+  @UsePipes(new ValidationPipe({ whitelist: true }))
+  async findAll(@Query() paginationDto: PaginationDto): Promise<Response<Review[]>> {
+    const { data, total } = await this.reviewService.findAll(paginationDto);
+    return {
+      data,
+      meta: {
+        total,
+        page: paginationDto.page ?? 1,
+        limit: paginationDto.limit ?? 10,
+        totalPages: Math.ceil(total / (paginationDto.limit ?? 10)),
+      },
+      message: 'Reviews retrieved successfully',
+      code: 200,
+    };
+  }
 
   @Get('user/:userId')
   @UsePipes(new ValidationPipe({ whitelist: true }))
@@ -45,6 +46,26 @@ export class ReviewController {
         totalPages: Math.ceil(total / (paginationDto.limit ?? 10)),
       },
       message: 'Reviews retrieved successfully',
+      code: 200,
+    };
+  }
+
+  @Get('recipe/:recipeId')
+  @UsePipes(new ValidationPipe({ whitelist: true }))
+  async findByRecipeId(
+    @Param('recipeId', ParseIntPipe) recipeId: number,
+    @Query() paginationDto: PaginationDto,
+  ): Promise<Response<Review[]>> {
+    const { data, total } = await this.reviewService.findByRecipeId(recipeId, paginationDto);
+    return {
+      data,
+      meta: {
+        total,
+        page: paginationDto.page ?? 1,
+        limit: paginationDto.limit ?? 10,
+        totalPages: Math.ceil(total / (paginationDto.limit ?? 10)),
+      },
+      message: 'Reviews for recipe retrieved successfully',
       code: 200,
     };
   }
@@ -72,6 +93,6 @@ export class ReviewController {
   @Delete(':id')
   async deleteReview(@Param('id', ParseIntPipe) id: number): Promise<Response<null>> {
     await this.reviewService.deleteReview(id);
-    return { data: null, message: 'Review deleted successfully', code: 200 };
+    return { data: null, message: 'Review and its replies deleted successfully', code: 200 };
   }
 }
