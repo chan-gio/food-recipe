@@ -25,12 +25,24 @@ export class ReviewRepository implements IReviewRepository {
     try {
       const { page, limit } = paginationDto;
       const skip = ((page ?? 1) - 1) * (limit ?? 10);
-      const [data, total] = await this.reviewRepo.findAndCount({
-        skip,
-        take: limit,
-        relations: ['user', 'recipe'],
-      });
-      this.logger.log(`Fetched ${data.length} reviews (page ${page}, limit ${limit})`);
+
+      const query = this.reviewRepo.createQueryBuilder('review')
+        .leftJoinAndSelect('review.user', 'user')
+        .leftJoinAndSelect('review.recipe', 'recipe')
+        .where('review.parent IS NULL')
+        .skip(skip)
+        .take(limit)
+        .orderBy('review.created_at', 'DESC');
+
+      const [topLevelReviews, total] = await query.getManyAndCount();
+
+      const data = await Promise.all(
+        topLevelReviews.map(async (review) => {
+          return await this.fetchReviewWithReplies(review);
+        })
+      );
+
+      this.logger.log(`Fetched ${data.length} top-level reviews (page ${page}, limit ${limit})`);
       return { data, total };
     } catch (error) {
       this.logger.error(`Failed to fetch all reviews: ${error.message}`, error.stack);
@@ -42,15 +54,24 @@ export class ReviewRepository implements IReviewRepository {
     try {
       const { page, limit } = paginationDto;
       const skip = ((page ?? 1) - 1) * (limit ?? 10);
-      const query = this.reviewRepo.createQueryBuilder('Review')
-        .leftJoinAndSelect('Review.user', 'user')
-        .leftJoinAndSelect('Review.recipe', 'recipe')
-        .where('Review.user_id = :userId', { userId })
+
+      const query = this.reviewRepo.createQueryBuilder('review')
+        .leftJoinAndSelect('review.user', 'user')
+        .leftJoinAndSelect('review.recipe', 'recipe')
+        .where('review.user_id = :userId', { userId })
+        .andWhere('review.parent IS NULL')
         .skip(skip)
         .take(limit)
-        .orderBy('Review.review_id', 'ASC');
+        .orderBy('review.created_at', 'DESC');
 
-      const [data, total] = await query.getManyAndCount();
+      const [topLevelReviews, total] = await query.getManyAndCount();
+
+      const data = await Promise.all(
+        topLevelReviews.map(async (review) => {
+          return await this.fetchReviewWithReplies(review);
+        })
+      );
+
       this.logger.log(`Fetched ${data.length} reviews for user ${userId} (page ${page}, limit ${limit})`);
       return { data, total };
     } catch (error) {
@@ -59,16 +80,65 @@ export class ReviewRepository implements IReviewRepository {
     }
   }
 
+  async findByRecipeId(recipeId: number, paginationDto: PaginationDto): Promise<{ data: Review[]; total: number }> {
+    try {
+      const { page, limit } = paginationDto;
+      const skip = ((page ?? 1) - 1) * (limit ?? 10);
+
+      const query = this.reviewRepo.createQueryBuilder('review')
+        .leftJoinAndSelect('review.user', 'user')
+        .leftJoinAndSelect('review.recipe', 'recipe')
+        .where('review.recipe_id = :recipeId', { recipeId })
+        .andWhere('review.parent IS NULL')
+        .skip(skip)
+        .take(limit)
+        .orderBy('review.created_at', 'DESC');
+
+      const [topLevelReviews, total] = await query.getManyAndCount();
+
+      const data = await Promise.all(
+        topLevelReviews.map(async (review) => {
+          return await this.fetchReviewWithReplies(review);
+        })
+      );
+
+      this.logger.log(`Fetched ${data.length} reviews for recipe ${recipeId} (page ${page}, limit ${limit})`);
+      return { data, total };
+    } catch (error) {
+      this.logger.error(`Failed to fetch reviews for recipe ${recipeId}: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
   async findById(id: number): Promise<Review | null> {
     try {
-      return await this.reviewRepo.findOne({
+      const review = await this.reviewRepo.findOne({
         where: { review_id: id },
         relations: ['recipe', 'user'],
       });
+      if (review) {
+        return await this.fetchReviewWithReplies(review);
+      }
+      return null;
     } catch (error) {
       this.logger.error(`Failed to fetch review with ID ${id}: ${error.message}`, error.stack);
       throw error;
     }
+  }
+
+  private async fetchReviewWithReplies(review: Review): Promise<Review> {
+    const replies = await this.reviewRepo.find({
+      where: { parent: { review_id: review.review_id } },
+      relations: ['recipe', 'user'],
+    });
+
+    review.replies = await Promise.all(
+      replies.map(async (reply) => {
+        return await this.fetchReviewWithReplies(reply);
+      })
+    );
+
+    return review;
   }
 
   async create(dto: CreateReviewDto): Promise<Review> {
@@ -76,21 +146,47 @@ export class ReviewRepository implements IReviewRepository {
       if (!dto.recipe_id || !dto.user_id) {
         throw new BadRequestException('recipe_id and user_id are required');
       }
-      if (dto.rating < 1 || dto.rating > 5) {
-        throw new BadRequestException('Rating must be between 1 and 5');
-      }
 
-      const recipe = await this.recipeRepo.findOneOrFail({ where: { recipe_id: dto.recipe_id } });
+      const recipe = await this.recipeRepo.findOne({ where: { recipe_id: dto.recipe_id } });
+      if (!recipe) {
+        throw new NotFoundException(`Recipe with ID ${dto.recipe_id} not found`);
+      }
       this.logger.log(`Fetched recipe: ${JSON.stringify(recipe)}`);
 
-      const user = await this.userRepo.findOneOrFail({ where: { user_id: dto.user_id } });
+      const user = await this.userRepo.findOne({ where: { user_id: dto.user_id } });
+      if (!user) {
+        throw new NotFoundException(`User with ID ${dto.user_id} not found`);
+      }
       this.logger.log(`Fetched user: ${JSON.stringify(user)}`);
 
-      const newReview = new Review();
-      newReview.rating = dto.rating;
-      newReview.comment = dto.comment ?? '';
-      newReview.recipe = recipe;
-      newReview.user = user;
+      const newReview = this.reviewRepo.create({
+        recipe,
+        user,
+        comment: dto.comment ?? '',
+        rating: dto.parent_review_id ? (dto.rating !== undefined ? dto.rating : null) : dto.rating,
+      });
+
+      if (!dto.parent_review_id) {
+        newReview.parent = null;
+        if (dto.rating === undefined) {
+          throw new BadRequestException('Rating is required for top-level reviews');
+        }
+        if (dto.rating < 1 || dto.rating > 5) {
+          throw new BadRequestException('Rating must be between 1 and 5');
+        }
+      } else {
+        const parentReview = await this.reviewRepo.findOne({
+          where: { review_id: dto.parent_review_id },
+          relations: ['recipe'],
+        });
+        if (!parentReview) {
+          throw new NotFoundException(`Parent review with ID ${dto.parent_review_id} not found`);
+        }
+        if (parentReview.recipe.recipe_id !== dto.recipe_id) { // Fixed: Changed review_id to recipe_id
+          throw new BadRequestException('Parent review must belong to the same recipe');
+        }
+        newReview.parent = parentReview;
+      }
 
       this.logger.log(`Creating review: ${JSON.stringify(newReview)}`);
 
@@ -117,13 +213,35 @@ export class ReviewRepository implements IReviewRepository {
 
   async delete(id: number): Promise<void> {
     try {
-      const result = await this.reviewRepo.delete(id);
-      if (result.affected === 0) {
+      const review = await this.reviewRepo.findOne({ where: { review_id: id } });
+      if (!review) {
         throw new NotFoundException(`Review with ID ${id} not found`);
       }
+
+      const descendants = await this.fetchAllDescendants(id);
+      const idsToDelete = [id, ...descendants.map(descendant => descendant.review_id)];
+      if (idsToDelete.length > 0) {
+        await this.reviewRepo.delete(idsToDelete);
+      }
+
+      this.logger.log(`Deleted review with ID ${id} and its descendants`);
     } catch (error) {
       this.logger.error(`Failed to delete review with ID ${id}: ${error.message}`, error.stack);
       throw error;
     }
+  }
+
+  private async fetchAllDescendants(reviewId: number): Promise<Review[]> {
+    const reviews = await this.reviewRepo.find({
+      where: { parent: { review_id: reviewId } },
+    });
+
+    let descendants: Review[] = [];
+    for (const review of reviews) {
+      const childDescendants = await this.fetchAllDescendants(review.review_id);
+      descendants = [...descendants, review, ...childDescendants];
+    }
+
+    return descendants;
   }
 }

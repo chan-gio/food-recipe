@@ -11,7 +11,8 @@ import { PaginationDto } from 'src/common/dots/pagination.dto';
 export class ReviewService implements IReviewService {
   constructor(
     @Inject('IReviewRepository')
-    private readonly reviewRepository: IReviewRepository) {}
+    private readonly reviewRepository: IReviewRepository,
+  ) {}
 
   async findAll(paginationDto: PaginationDto): Promise<{ data: Review[]; total: number }> {
     return this.reviewRepository.findAll(paginationDto);
@@ -19,6 +20,10 @@ export class ReviewService implements IReviewService {
 
   async findByUserId(userId: number, paginationDto: PaginationDto): Promise<{ data: Review[]; total: number }> {
     return this.reviewRepository.findByUserId(userId, paginationDto);
+  }
+
+  async findByRecipeId(recipeId: number, paginationDto: PaginationDto): Promise<{ data: Review[]; total: number }> {
+    return this.reviewRepository.findByRecipeId(recipeId, paginationDto);
   }
 
   async getReviewById(id: number): Promise<Review> {

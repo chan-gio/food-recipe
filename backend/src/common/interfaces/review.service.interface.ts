@@ -6,6 +6,7 @@ import { PaginationDto } from '../dots/pagination.dto';
 export interface IReviewService {
   findAll(paginationDto: PaginationDto): Promise<{ data: Review[]; total: number }>;
   findByUserId(userId: number, paginationDto: PaginationDto): Promise<{ data: Review[]; total: number }>;
+  findByRecipeId(recipeId: number, paginationDto: PaginationDto): Promise<{ data: Review[]; total: number }>;
   getReviewById(id: number): Promise<Review>;
   createReview(dto: CreateReviewDto): Promise<Review>;
   updateReview(id: number, dto: UpdateReviewDto): Promise<Review>;

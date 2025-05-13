@@ -1,9 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Raw, Repository } from 'typeorm';
 import { Recipe } from '../entities/recipe.entity';
 import { IRecipeRepository } from '../../common/interfaces/recipe.repository.interface';
 import { PaginationDto } from 'src/common/dots/pagination.dto';
+import { FilterRecipeDto } from '../dtos/filter-recipe.dto';
 
 @Injectable()
 export class RecipeRepository implements IRecipeRepository {
@@ -58,6 +59,67 @@ export class RecipeRepository implements IRecipeRepository {
       });
     } catch (error) {
       this.logger.error(`Failed to fetch recipe with ID ${id}: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  async filterRecipes(filterDto: FilterRecipeDto, paginationDto: PaginationDto): Promise<{ data: Recipe[]; total: number }> {
+    try {
+      const { page, limit } = paginationDto;
+      const { categoryIds, ingredientIds } = filterDto;
+      const skip = ((page ?? 1) - 1) * ( limit ?? 10);
+
+      let where: any = {};
+
+      // Log the filtering conditions
+      this.logger.log(`Filtering recipes with categoryIds: ${JSON.stringify(categoryIds)}, ingredientIds: ${JSON.stringify(ingredientIds)}`);
+
+      // Filter by categoryIds using a subquery
+      if (categoryIds && categoryIds.length > 0) {
+        where = {
+          ...where,
+          recipe_id: Raw((alias) => {
+            const categoryIdsString = categoryIds.join(',');
+            return `${alias} IN (
+              SELECT rc.recipe_id_for_category
+              FROM RecipeCategory rc
+              WHERE rc.category_id_for_recipe IN (${categoryIdsString})
+              GROUP BY rc.recipe_id_for_category
+              HAVING COUNT(DISTINCT rc.category_id_for_recipe) = ${categoryIds.length}
+            )`;
+          }),
+        };
+      }
+
+      // Filter by ingredientIds using a subquery
+      if (ingredientIds && ingredientIds.length > 0) {
+        where = {
+          ...where,
+          recipe_id: Raw((alias) => {
+            const ingredientIdsString = ingredientIds.join(',');
+            return `${alias} IN (
+              SELECT h.recipe_id_for_ingredient
+              FROM has h
+              WHERE h.ingredient_id_for_recipe IN (${ingredientIdsString})
+              GROUP BY h.recipe_id_for_ingredient
+              HAVING COUNT(DISTINCT h.ingredient_id_for_recipe) = ${ingredientIds.length}
+            )`;
+          }),
+        };
+      }
+
+      const [data, total] = await this.recipeRepo.findAndCount({
+        where,
+        skip,
+        take: limit,
+        order: { created_at: 'DESC' },
+        relations: ['user', 'categories', 'ingredients', 'instructions', 'reviews', 'reviews.user'],
+      });
+
+      this.logger.log(`Filtered ${data.length} recipes (page ${page}, limit ${limit}, total ${total})`);
+      return { data, total };
+    } catch (error) {
+      this.logger.error(`Failed to filter recipes: ${error.message}`, error.stack);
       throw error;
     }
   }

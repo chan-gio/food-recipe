@@ -3,11 +3,11 @@ import { IRecipeRepository } from '../../common/interfaces/recipe.repository.int
 import { Recipe } from '../entities/recipe.entity';
 import { CreateRecipeDto } from '../dtos/create-recipe.dto';
 import { UpdateRecipeDto } from '../dtos/update-recipe.dto';
-import { v2 as cloudinary } from 'cloudinary';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { IRecipeService } from 'src/common/interfaces/recipe.service.interface';
 import { PaginationDto } from 'src/common/dots/pagination.dto';
+import { FilterRecipeDto } from 'src/recipe/dtos/filter-recipe.dto';
 
 @Injectable()
 export class RecipeService implements IRecipeService {
@@ -36,6 +36,10 @@ export class RecipeService implements IRecipeService {
       throw new NotFoundException(`Recipe with id ${id} not found`);
     }
     return recipe;
+  }
+
+  async filterRecipes(filterDto: FilterRecipeDto, paginationDto: PaginationDto): Promise<{ data: Recipe[]; total: number }> {
+    return this.recipeRepository.filterRecipes(filterDto, paginationDto);
   }
 
   async createRecipe(dto: CreateRecipeDto, userId: number, files?: { images?: Express.Multer.File[]; videos?: Express.Multer.File[] }): Promise<Recipe> {
@@ -164,7 +168,7 @@ export class RecipeService implements IRecipeService {
         }
 
         // Manually insert ingredients into Has table using raw SQL
-        if (dto.ingredients && dto.ingredients.length > 0) {
+        if (dto.ingredients && dto.instructions.length > 0) {
           for (const ingredientDto of dto.ingredients) {
             await queryRunner.manager.query(
               `INSERT INTO Has (recipe_id_for_ingredient, ingredient_id_for_recipe)
@@ -358,6 +362,7 @@ export class RecipeService implements IRecipeService {
 
         // Update instructions: delete existing and insert new ones
         if (dto.instructions !== undefined) {
+          this.logger.log(`Updating instructions for recipe ID ${id}: ${JSON.stringify(dto.instructions)}`);
           await queryRunner.manager.query(
             `DELETE FROM Instruction WHERE recipe_id = ?`,
             [id],
@@ -376,6 +381,7 @@ export class RecipeService implements IRecipeService {
 
         // Update ingredients: delete existing and insert new ones
         if (dto.ingredients !== undefined) {
+          this.logger.log(`Updating ingredients for recipe ID ${id}: ${JSON.stringify(dto.ingredients)}`);
           await queryRunner.manager.query(
             `DELETE FROM Has WHERE recipe_id_for_ingredient = ?`,
             [id],
@@ -394,6 +400,7 @@ export class RecipeService implements IRecipeService {
 
         // Update categories: delete existing and insert new ones
         if (dto.categories !== undefined) {
+          this.logger.log(`Updating categories for recipe ID ${id}: ${JSON.stringify(dto.categories)}`);
           await queryRunner.manager.query(
             `DELETE FROM RecipeCategory WHERE recipe_id_for_category = ?`,
             [id],

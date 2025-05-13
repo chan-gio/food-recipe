@@ -41,10 +41,23 @@ export class UserService implements IUserService {
         throw new BadRequestException('Email already exists');
       }
     }
-
+  
+    // Validate dto.password
+    if (!dto.password || typeof dto.password !== 'string' || dto.password.trim() === '') {
+      this.logger.error('Password is invalid or missing in CreateUserDto');
+      throw new BadRequestException('Password is required and must be a non-empty string');
+    }
+  
     const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(dto.password, saltRounds);
-
+    let hashedPassword: string;
+    try {
+      hashedPassword = await bcrypt.hash(dto.password, saltRounds);
+      this.logger.log(`Successfully hashed password for user ${dto.signin_account}: ${hashedPassword}`);
+    } catch (error) {
+      this.logger.error(`Failed to hash password for user ${dto.signin_account}: ${error.message}`, error.stack);
+      throw new BadRequestException('Failed to hash password');
+    }
+  
     const user = {
       signin_account: dto.signin_account,
       password: hashedPassword,
@@ -52,10 +65,11 @@ export class UserService implements IUserService {
       full_name: dto.full_name || null,
       role: dto.role || 'user',
     };
-
-    return this.userRepository.create(user);
+  
+    const createdUser = await this.userRepository.create(user);
+    this.logger.log(`Created user: ${JSON.stringify(createdUser)}`);
+    return createdUser;
   }
-
   async create(user: Partial<User>): Promise<User> {
     return this.userRepository.create(user);
   }
