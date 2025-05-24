@@ -183,7 +183,7 @@ const DetailRecipe = () => {
         setIsFavorited(false);
       } else {
         await favoriteService.createFavorite({
-          user_id: userId,
+          user_id: parseInt(userId),
           recipe_id: parseInt(id),
         });
         message.success("Added to favorites");

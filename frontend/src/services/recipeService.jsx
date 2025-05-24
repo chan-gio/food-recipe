@@ -31,22 +31,76 @@ class RecipeService {
     }
   }
 
+  // Filter recipes by categoryIds and ingredientIds with pagination
+  async filterRecipes({ categoryIds, ingredientIds, page, limit } = {}) {
+    try {
+      const params = {};
+
+      if (categoryIds && Array.isArray(categoryIds) && categoryIds.length > 0) {
+        params.categoryIds = categoryIds;
+      }
+
+      if (ingredientIds && Array.isArray(ingredientIds) && ingredientIds.length > 0) {
+        params.ingredientIds = ingredientIds;
+      }
+
+      if (page !== undefined) {
+        params.page = page;
+      }
+      if (limit !== undefined) {
+        params.limit = limit;
+      }
+
+      const response = await api.get('/recipes/filter', { params });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Failed to filter recipes');
+    }
+  }
+
+  async getTopContributors() {
+    try {
+      const response = await api.get('/recipes/users/top-contributors');
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Failed to fetch top contributors');
+    }
+  }
+
+  async getMostFavoritedRecipes(limit = 5) {
+    try {
+      const response = await api.get('/recipes/most-favorited');
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Failed to fetch most favorited recipes');
+    }
+  }
+
+  async searchRecipesByName(name, params = {}) {
+    try {
+      const response = await api.get('/recipes/search', {
+        params: { name, ...params },
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Failed to search recipes');
+    }
+  }
+
   // Create a new recipe
   async createRecipe(dto, files = {}) {
     try {
       const formData = new FormData();
-      // Append the recipe data as a stringified JSON
       formData.append('dto', JSON.stringify(dto));
 
-      // Append all files (images and videos) under the 'files' key
       if (files.images && files.images.length > 0) {
         files.images.forEach((file) => {
-          formData.append('files', file); // Use 'files' key as expected by FilesInterceptor
+          formData.append('files', file);
         });
       }
       if (files.videos && files.videos.length > 0) {
         files.videos.forEach((file) => {
-          formData.append('files', file); // Use 'files' key as expected by FilesInterceptor
+          formData.append('files', file);
         });
       }
 
@@ -65,18 +119,16 @@ class RecipeService {
   async updateRecipe(id, dto, files = {}) {
     try {
       const formData = new FormData();
-      // Append the recipe data as a stringified JSON
       formData.append('dto', JSON.stringify(dto));
 
-      // Append all files (images and videos) under the 'files' key
       if (files.images && files.images.length > 0) {
         files.images.forEach((file) => {
-          formData.append('files', file); // Use 'files' key as expected by FilesInterceptor
+          formData.append('files', file);
         });
       }
       if (files.videos && files.videos.length > 0) {
         files.videos.forEach((file) => {
-          formData.append('files', file); // Use 'files' key as expected by FilesInterceptor
+          formData.append('files', file);
         });
       }
 
