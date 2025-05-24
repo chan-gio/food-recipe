@@ -1,62 +1,58 @@
-.recipeManagement {
-  padding: 20px;
+:global {
+  .recipe-management {
+    padding: 20px !important;
 
-  h2 {
-    font-size: 24px;
-    margin-bottom: 20px;
-  }
+    .header {
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      margin-bottom: 20px !important;
 
-  .error {
-    color: red;
-    margin-bottom: 10px;
-  }
-
-  .recipeList {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .recipeCard {
-    border: 1px solid #e8e8e8;
-    border-radius: 8px;
-    overflow: hidden;
-
-    .recipeContent {
-      padding: 16px;
-
-      h3 {
-        margin: 0 0 8px;
-        font-size: 18px;
+      h2 {
+        margin: 0 !important;
+        font-size: 20px !important;
+        color: #333 !important;
       }
 
-      p {
-        margin: 0;
-        color: #595959;
+      .add-button {
+        background-color: #1890ff !important;
+        color: white !important;
+        border: none !important;
+        &:hover {
+          background-color: #40a9ff !important;
+        }
       }
     }
 
-    .recipeActions {
-      display: flex;
-      justify-content: flex-end;
-      padding: 16px;
-      border-top: 1px solid #e8e8e8;
-      gap: 10px;
+    .ant-table {
+      .ant-table-thead > tr > th {
+        background-color: #f0f2f5 !important;
+        font-weight: bold !important;
+      }
+
+      .view-button {
+        background-color: #28a745 !important;
+        color: white !important;
+        border: none !important;
+        &:hover {
+          background-color: #218838 !important;
+        }
+      }
+
+      .delete-button {
+        background-color: #dc3545 !important;
+        color: white !important;
+        border: none !important;
+        &:hover {
+          background-color: #c82333 !important;
+        }
+      }
+
+      .action-buttons {
+        display: flex !important;
+        justify-content: center !important;
+        gap: 8px !important;
+      }
     }
-  }
-
-  .editButton,
-  .deleteButton,
-  .addRecipeButton {
-    border-radius: 4px;
-  }
-
-  .addRecipeButton {
-    margin-top: 20px;
-  }
-
-  .pagination {
-    margin-top: 20px;
-    text-align: center;
   }
 }

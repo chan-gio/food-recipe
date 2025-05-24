@@ -1,112 +1,130 @@
 import React, { useState, useEffect } from "react";
-import styles from "./RecipeManagement.module.scss";
-import { Button, Card, Pagination } from "antd";
-import { Link } from "react-router-dom";
-import { recipeService } from "../../services/recipeService"; // Adjust path as needed
+import { Table, Button, message, Input, Space } from "antd";
+import { recipeService } from "../../services/recipeService"; // Adjust the import path as needed
+import AdminRecipeModal from "../../Components/Modal/AdminRecipeModal"; // Import the new modal component
+import "./RecipeManagement.module.scss";
 
-const RecipeManagement = ({ limit = 5 }) => {
+const { Search } = Input;
+
+const RecipeManagement = () => {
   const [recipes, setRecipes] = useState([]);
-  const [recipeMeta, setRecipeMeta] = useState(null);
-  const [recipePage, setRecipePage] = useState(1);
-  const [recipesLoading, setRecipesLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
 
-  // Fetch all recipes when component mounts or recipePage/limit changes
+  // Fetch recipes on component mount
   useEffect(() => {
-    console.log(
-      "useEffect triggered with recipePage:",
-      recipePage,
-      "limit:",
-      limit
-    );
-
-    const fetchRecipes = async () => {
-      setRecipesLoading(true);
-      try {
-        const response = await recipeService.getRecipes({
-          page: recipePage,
-          limit,
-        });
-        console.log("Fetched recipes response:", response);
-        setRecipes(response.data || []); // Ensure recipes is an array
-        setRecipeMeta(response.meta || null);
-        setError("");
-      } catch (err) {
-        console.error("Error fetching recipes:", err.message);
-        setError(err.message || "Failed to fetch recipes");
-        setRecipes([]); // Set to empty array on error
-      } finally {
-        setRecipesLoading(false);
-      }
-    };
-
     fetchRecipes();
-  }, [recipePage, limit]);
+  }, []);
 
-  // Handle recipe deletion
-  const handleDeleteRecipe = async (id) => {
+  const fetchRecipes = async (searchQuery = "") => {
+    setLoading(true);
     try {
-      await recipeService.deleteRecipe(id);
-      const response = await recipeService.getRecipes({
-        page: recipePage,
-        limit,
-      });
-      console.log("Post-deletion recipes response:", response);
-      setRecipes(response.data || []); // Ensure recipes is an array
-      setRecipeMeta(response.meta || null);
-      setError("");
-    } catch (err) {
-      console.error("Error deleting recipe:", err.message);
-      setError(err.message || "Failed to delete recipe");
+      if (searchQuery) {
+        const response = await recipeService.searchRecipesByName(searchQuery);
+        setRecipes(response.data);
+      } else {
+        const response = await recipeService.getRecipes();
+        setRecipes(response.data);
+      }
+    } catch (error) {
+      message.error(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
+  // Handle search
+  const handleSearch = (value) => {
+    fetchRecipes(value);
+  };
+
+  // Handle delete recipe
+  const handleDelete = async (recipeId) => {
+    try {
+      await recipeService.deleteRecipe(recipeId);
+      message.success("Recipe deleted successfully");
+      fetchRecipes(); // Refresh the table
+    } catch (error) {
+      message.error(error.message);
+    }
+  };
+
+  // Handle view recipe
+  const handleView = (recipe) => {
+    setSelectedRecipe(recipe);
+    setIsModalVisible(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalVisible(false);
+    setSelectedRecipe(null);
+  };
+
+  // Define table columns
+  const columns = [
+    {
+      title: "ID",
+      dataIndex: "recipe_id",
+      key: "recipe_id",
+    },
+    {
+      title: "Recipe Name",
+      dataIndex: "recipe_name",
+      key: "recipe_name",
+    },
+    {
+      title: "Description",
+      dataIndex: "description",
+      key: "description",
+    },
+    {
+      title: "Recipe Type",
+      dataIndex: "recipe_type",
+      key: "recipe_type",
+    },
+    {
+      title: "Action",
+      key: "action",
+      render: (_, record) => (
+        <Space className="action-buttons">
+          <Button className="view-button" onClick={() => handleView(record)}>
+            VIEW
+          </Button>
+          <Button
+            className="delete-button"
+            onClick={() => handleDelete(record.recipe_id)}
+          >
+            DELETE
+          </Button>
+        </Space>
+      ),
+    },
+  ];
+
   return (
-    <div className={styles.recipeManagement}>
-      <h2>All Recipes</h2>
-      {error && <p className={styles.error}>{error}</p>}
-      {recipesLoading ? (
-        <p>Loading...</p>
-      ) : !recipes || !Array.isArray(recipes) || recipes.length === 0 ? (
-        <p>No recipes available</p>
-      ) : (
-        <div className={styles.recipeList}>
-          {recipes.map((recipe) => (
-            <Card key={recipe.recipe_id} className={styles.recipeCard}>
-              <div className={styles.recipeContent}>
-                <h3>{recipe.recipe_name}</h3>
-                <p>{recipe.description}</p>
-              </div>
-              <div className={styles.recipeActions}>
-                <Link to={`/detail/${recipe.recipe_id}`}>
-                  <Button className={styles.viewButton}>View</Button>
-                </Link>
-                <Button
-                  danger
-                  onClick={() => handleDeleteRecipe(recipe.recipe_id)}
-                  className={styles.deleteButton}
-                >
-                  Delete
-                </Button>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
-      {recipeMeta && recipes && recipes.length > 0 && (
-        <Pagination
-          current={recipePage}
-          pageSize={limit}
-          total={recipeMeta.total}
-          onChange={setRecipePage}
-          className={styles.pagination}
+    <div className="recipe-management">
+      <div className="header">
+        <h2>Admin Recipes</h2>
+        <Search
+          placeholder="Search recipes by name"
+          onSearch={handleSearch}
+          style={{ width: 300 }}
+          allowClear
         />
-      )}
-      <Link to="/recipeform">
-        <Button type="primary" className={styles.addRecipeButton}>
-          Add Recipe
-        </Button>
-      </Link>
+      </div>
+      <Table
+        dataSource={recipes}
+        columns={columns}
+        rowKey="recipe_id"
+        loading={loading}
+        pagination={false}
+      />
+      <AdminRecipeModal
+        visible={isModalVisible}
+        onClose={handleModalClose}
+        recipe={selectedRecipe}
+      />
     </div>
   );
 };

@@ -1,15 +1,12 @@
-import api from './api';
 import api from "./api";
 
 class RecipeService {
   // Fetch all recipes with pagination
   async getRecipes(params = {}) {
     try {
-      const response = await api.get('/recipes', { params });
       const response = await api.get("/recipes", { params });
       return response.data;
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch recipes');
       throw new Error(
         error.response?.data?.message || "Failed to fetch recipes"
       );

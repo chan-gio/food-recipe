@@ -6,31 +6,43 @@ import {
 } from "react-router-dom";
 import { Routes } from "./Routers/allrouters";
 import Layout from "./Components/Layout/Layout";
+import AdminLayout from "./Components/Layout/AdminLayout"; // Import the new AdminLayout
 
 const App = () => {
   return (
     <Router>
       <Suspense fallback={<div>Loading...</div>}>
         <Switch>
-          {Routes.map(({ path, component, children }, index) => (
-            <Route
-              key={index}
-              path={path}
-              element={
-                path === "/login" ? component : <Layout>{component}</Layout>
-              }
-            >
-              {children &&
-                children.map((child, childIndex) => (
-                  <Route
-                    key={childIndex}
-                    path={child.path}
-                    element={child.component}
-                  />
-                ))}
-            </Route>
-          ))}
-          {/* Thêm tuyến đường động cho /recipeform/:id */}
+          {Routes.map(({ path, component, children }, index) => {
+            // Check if the route is an admin route
+            const isAdminRoute = path.startsWith("/admin");
+
+            return (
+              <Route
+                key={index}
+                path={path}
+                element={
+                  path === "/login" ? (
+                    component
+                  ) : isAdminRoute ? (
+                    <AdminLayout>{component}</AdminLayout>
+                  ) : (
+                    <Layout>{component}</Layout>
+                  )
+                }
+              >
+                {children &&
+                  children.map((child, childIndex) => (
+                    <Route
+                      key={childIndex}
+                      path={child.path}
+                      element={child.component}
+                    />
+                  ))}
+              </Route>
+            );
+          })}
+          {/* Route for /recipeform/:id */}
           <Route
             path="/recipeform/:id"
             element={
@@ -47,6 +59,5 @@ const App = () => {
     </Router>
   );
 };
-
 
 export default App;

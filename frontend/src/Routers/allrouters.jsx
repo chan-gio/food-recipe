@@ -12,6 +12,9 @@ const AllRecipes = lazy(() => import("../Pages/AllRecipes/AllRecipes"));
 const CategoriesManagement = lazy(() =>
   import("../Pages/Admin/CategoriesManagement")
 );
+const IngredientsManagement = lazy(() =>
+  import("../Pages/Admin/IngredientsManagement")
+);
 const Users = lazy(() => import("../Pages/Users/User"));
 
 const Routes = [
@@ -31,6 +34,7 @@ const Routes = [
       { path: "recipes", component: <RecipeManagement /> },
       { path: "users", component: <UserManagement /> },
       { path: "categories", component: <CategoriesManagement /> },
+      { path: "ingredients", component: <IngredientsManagement /> },
     ],
   },
 ];

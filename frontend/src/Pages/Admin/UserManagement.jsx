@@ -1,156 +1,177 @@
 import React, { useState, useEffect } from "react";
-import styles from "./AdminPage.module.scss";
+import { Table, Button, message, Input, Space, Form } from "antd";
+import { userService } from "../../services/userService"; // Adjust the import path as needed
+import AdminUserModal from "../../Components/Modal/AdminUserModal"; // Import the new modal component
+import "./UserManagement.module.scss"; // Update to .scss to match naming convention
+
+const { Search } = Input;
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
-  const [formData, setFormData] = useState({
-    id: null,
-    username: "",
-    email: "",
-    role: "user",
+  const [loading, setLoading] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [form] = Form.useForm();
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
   });
-  const [isEditing, setIsEditing] = useState(false);
 
-  useEffect(() => {
-    // Giả lập lấy dữ liệu người dùng từ API
-    const fetchUsers = async () => {
-      const mockUsers = [
-        { id: 1, username: "user1", email: "user1@example.com", role: "user" },
-        {
-          id: 2,
-          username: "admin1",
-          email: "admin1@example.com",
-          role: "admin",
-        },
-      ];
-      setUsers(mockUsers);
-    };
-    fetchUsers();
-  }, []);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handleAddUser = () => {
-    if (formData.username && formData.email) {
-      const newUser = {
-        id: users.length + 1,
-        username: formData.username,
-        email: formData.email,
-        role: formData.role,
+  // Fetch users on component mount or when pagination/search changes
+  const fetchUsers = async (page = 1, pageSize = 10, searchQuery = "") => {
+    setLoading(true);
+    try {
+      const params = {
+        page,
+        limit: pageSize,
       };
-      setUsers([...users, newUser]);
-      resetForm();
+      if (searchQuery) {
+        params.signin_account = searchQuery;
+      }
+      const response = await userService.getUsers(params);
+      setUsers(response.data);
+      setPagination({
+        current: response.meta.page,
+        pageSize: response.meta.limit,
+        total: response.meta.total,
+      });
+    } catch (error) {
+      message.error(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleEditUser = (user) => {
-    setFormData(user);
-    setIsEditing(true);
+  // Initial fetch
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  // Handle pagination change
+  const handleTableChange = (pagination) => {
+    fetchUsers(pagination.current, pagination.pageSize);
   };
 
-  const handleUpdateUser = () => {
-    setUsers(users.map((user) => (user.id === formData.id ? formData : user)));
-    resetForm();
-    setIsEditing(false);
+  // Handle search
+  const handleSearch = (value) => {
+    fetchUsers(1, pagination.pageSize, value);
   };
 
-  const handleDeleteUser = (id) => {
-    setUsers(users.filter((user) => user.id !== id));
+  // Handle delete user
+  const handleDelete = async (userId) => {
+    try {
+      await userService.deleteUser(userId);
+      message.success("User deleted successfully");
+      fetchUsers(pagination.current, pagination.pageSize);
+    } catch (error) {
+      message.error(error.message);
+    }
   };
 
-  const resetForm = () => {
-    setFormData({ id: null, username: "", email: "", role: "user" });
+  // Handle edit user
+  const handleEdit = (user) => {
+    setSelectedUser(user);
+    form.setFieldsValue({
+      signin_account: user.signin_account,
+      email: user.email,
+      full_name: user.full_name,
+      role: user.role,
+    });
+    setIsModalVisible(true);
   };
+
+  const handleModalClose = () => {
+    setIsModalVisible(false);
+    setSelectedUser(null);
+    form.resetFields();
+  };
+
+  const handleSave = async () => {
+    try {
+      const values = await form.validateFields();
+      const userData = {
+        signin_account: values.signin_account,
+        email: values.email,
+        full_name: values.full_name,
+        role: values.role,
+      };
+      await userService.updateUser(selectedUser.user_id, userData);
+      message.success("User updated successfully");
+      handleModalClose();
+      fetchUsers(pagination.current, pagination.pageSize);
+    } catch (error) {
+      message.error(error.message || "Failed to update user");
+    }
+  };
+
+  // Define table columns
+  const columns = [
+    {
+      title: "ID",
+      dataIndex: "user_id",
+      key: "user_id",
+    },
+    {
+      title: "Username",
+      dataIndex: "signin_account",
+      key: "signin_account",
+    },
+    {
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
+    },
+    {
+      title: "Action",
+      key: "action",
+      render: (_, record) => (
+        <Space className="action-buttons">
+          <Button className="view-button" onClick={() => handleEdit(record)}>
+            VIEW/EDIT
+          </Button>
+          <Button
+            className="delete-button"
+            onClick={() => handleDelete(record.user_id)}
+          >
+            DELETE
+          </Button>
+        </Space>
+      ),
+    },
+  ];
 
   return (
-    <div>
-      <div className={styles.form}>
-        <h2>{isEditing ? "Sửa Người dùng" : "Thêm Người dùng"}</h2>
-        <input
-          type="text"
-          name="username"
-          placeholder="Tên người dùng"
-          value={formData.username}
-          onChange={handleInputChange}
-          className={styles.input}
+    <div className="user-management">
+      <div className="header">
+        <h2>Admin Users</h2>
+        <Search
+          placeholder="Search users by username"
+          onSearch={handleSearch}
+          style={{ width: 300 }}
+          allowClear
         />
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={handleInputChange}
-          className={styles.input}
-        />
-        <select
-          name="role"
-          value={formData.role}
-          onChange={handleInputChange}
-          className={styles.input}
-        >
-          <option value="user">Người dùng</option>
-          <option value="admin">Quản trị viên</option>
-        </select>
-        <button
-          onClick={isEditing ? handleUpdateUser : handleAddUser}
-          className={styles.submitButton}
-        >
-          {isEditing ? "Cập nhật" : "Thêm"}
-        </button>
-        {isEditing && (
-          <button
-            onClick={() => {
-              resetForm();
-              setIsEditing(false);
-            }}
-            className={styles.cancelButton}
-          >
-            Hủy
-          </button>
-        )}
       </div>
-
-      <div className={styles.recipeList}>
-        <h2>Danh sách Người dùng</h2>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Tên người dùng</th>
-              <th>Email</th>
-              <th>Vai trò</th>
-              <th>Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user.id}>
-                <td>{user.username}</td>
-                <td>{user.email}</td>
-                <td>
-                  {user.role === "admin" ? "Quản trị viên" : "Người dùng"}
-                </td>
-                <td>
-                  <button
-                    onClick={() => handleEditUser(user)}
-                    className={styles.editButton}
-                  >
-                    Sửa
-                  </button>
-                  <button
-                    onClick={() => handleDeleteUser(user.id)}
-                    className={styles.deleteButton}
-                  >
-                    Xóa
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <Table
+        dataSource={users}
+        columns={columns}
+        rowKey="user_id"
+        loading={loading}
+        pagination={{
+          current: pagination.current,
+          pageSize: pagination.pageSize,
+          total: pagination.total,
+          showSizeChanger: true,
+        }}
+        onChange={handleTableChange}
+      />
+      <AdminUserModal
+        visible={isModalVisible}
+        onClose={handleModalClose}
+        onSave={handleSave}
+        user={selectedUser}
+        form={form}
+      />
     </div>
   );
 };

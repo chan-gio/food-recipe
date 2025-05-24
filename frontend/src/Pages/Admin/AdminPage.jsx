@@ -14,7 +14,7 @@ const AdminPage = () => {
               `${styles.navButton} ${isActive ? styles.active : ""}`
             }
           >
-            Recipes Mangement
+            Recipes Management
           </NavLink>
           <NavLink
             to="/admin/users"
@@ -22,7 +22,7 @@ const AdminPage = () => {
               `${styles.navButton} ${isActive ? styles.active : ""}`
             }
           >
-            Users Mangement
+            Users Management
           </NavLink>
           <NavLink
             to="/admin/categories"
@@ -31,6 +31,14 @@ const AdminPage = () => {
             }
           >
             Categories Management
+          </NavLink>
+          <NavLink
+            to="/admin/ingredients"
+            className={({ isActive }) =>
+              `${styles.navButton} ${isActive ? styles.active : ""}`
+            }
+          >
+            Ingredients Management
           </NavLink>
         </nav>
       </div>

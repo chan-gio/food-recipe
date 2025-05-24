@@ -7,6 +7,7 @@ import {
   UserOutlined,
   LoginOutlined,
   SearchOutlined,
+  BookOutlined,
 } from "@ant-design/icons";
 import styles from "./Header.module.scss";
 
@@ -35,6 +36,9 @@ const CustomHeader = () => {
         </Menu.Item>
         <Menu.Item key="3" icon={<LoginOutlined />}>
           <Link to="/login">Login</Link>
+        </Menu.Item>
+        <Menu.Item key="4" icon={<BookOutlined />}>
+          <Link to="/allrecipes">Recipes</Link>
         </Menu.Item>
         <Menu.Item
           key="search"

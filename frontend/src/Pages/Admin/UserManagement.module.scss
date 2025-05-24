@@ -1,5 +1,5 @@
 :global {
-  .categories-management {
+  .user-management {
     padding: 20px !important;
 
     .header {
@@ -13,27 +13,21 @@
         font-size: 20px !important;
         color: #333 !important;
       }
-
-      .header-actions {
-        display: flex !important;
-        align-items: center !important;
-        gap: 16px !important;
-      }
-
-      .add-button {
-        background-color: #1890ff !important;
-        color: white !important;
-        border: none !important;
-        &:hover {
-          background-color: #40a9ff !important;
-        }
-      }
     }
 
     .ant-table {
       .ant-table-thead > tr > th {
         background-color: #f0f2f5 !important;
         font-weight: bold !important;
+      }
+
+      .view-button {
+        background-color: #28a745 !important;
+        color: white !important;
+        border: none !important;
+        &:hover {
+          background-color: #218838 !important;
+        }
       }
 
       .delete-button {

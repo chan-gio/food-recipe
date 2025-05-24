@@ -1,292 +1,225 @@
-import React, { useState, useEffect, useCallback } from "react";
-import styles from "./AllRecipes.module.scss";
-import { Input, Select, Card, Rate, Spin, message, Pagination } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
+import React, { useState, useEffect } from "react";
+import {
+  Row,
+  Col,
+  Card,
+  Input,
+  Select,
+  Pagination,
+  Spin,
+  Empty,
+  Image,
+} from "antd";
+import { Link } from "react-router-dom";
+import { recipeService } from "../../services/recipeService";
 import { categoryService } from "../../services/categoryService";
 import { ingredientService } from "../../services/ingredientService";
+import styles from "./AllRecipes.module.scss";
 
+const { Search } = Input;
 const { Option } = Select;
 
-// Debounce function
-const debounce = (func, delay) => {
-  let timeoutId;
-  return (...args) => {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => func(...args), delay);
-  };
-};
-
-export default function AllRecipes() {
+const AllRecipes = () => {
+  const [recipes, setRecipes] = useState([]);
   const [categories, setCategories] = useState([]);
   const [ingredients, setIngredients] = useState([]);
-  const [recipes, setRecipes] = useState([]);
-  const [totalRecipes, setTotalRecipes] = useState(0);
-  const [selectedCategory, setSelectedCategory] = useState([]);
-  const [selectedIngredients, setSelectedIngredients] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [categorySearchQuery, setCategorySearchQuery] = useState("");
-  const [ingredientSearchQuery, setIngredientSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
+  });
+  const [filters, setFilters] = useState({
+    search: "",
+    category: [],
+    ingredient: [],
+  });
 
-  const recipesPerPage = 12;
-
-  // Debounced fetch for categories
-  const fetchCategories = useCallback(
-    debounce(async (query) => {
-      try {
-        const response = await categoryService.getCategoriesByName(query);
-        const categoriesData = Array.isArray(response)
-          ? response
-          : Array.isArray(response?.data)
-          ? response.data
-          : [];
-        console.log("Fetched categories:", categoriesData); // Debug log
-        setCategories(categoriesData);
-      } catch (err) {
-        message.error(err.message || "Failed to fetch categories");
-      }
-    }, 500),
-    []
-  );
-
-  // Debounced fetch for ingredients
-  const fetchIngredients = useCallback(
-    debounce(async (query) => {
-      try {
-        const response = await ingredientService.getIngredientByName(query);
-        const ingredientsData = Array.isArray(response)
-          ? response
-          : Array.isArray(response?.data)
-          ? response.data
-          : [];
-        console.log("Fetched ingredients:", ingredientsData); // Debug log
-        setIngredients(ingredientsData);
-      } catch (err) {
-        message.error(err.message || "Failed to fetch ingredients");
-      }
-    }, 500),
-    []
-  );
-
-  // Fetch initial categories and ingredients on mount
+  // Fetch categories and ingredients on mount
   useEffect(() => {
-    const fetchInitialData = async () => {
+    const fetchFilters = async () => {
       try {
-        setLoading(true);
-        await Promise.all([fetchCategories(""), fetchIngredients("")]);
-      } catch (err) {
-        const errorMessage = err.message || "Failed to fetch data";
-        setError(errorMessage);
-        message.error(errorMessage);
+        const categoryData = await categoryService.getCategories();
+        const ingredientData = await ingredientService.getIngredients();
+        setCategories(categoryData.data || []);
+        setIngredients(ingredientData.data || []);
+      } catch (error) {
+        console.error("Error fetching filters:", error);
+      }
+    };
+    fetchFilters();
+  }, []);
+
+  // Fetch recipes based on filters and pagination
+  useEffect(() => {
+    const fetchRecipes = async () => {
+      setLoading(true);
+      try {
+        let response;
+        if (filters.category.length > 0 || filters.ingredient.length > 0) {
+          // Use filterRecipes for category or ingredient filters
+          response = await recipeService.filterRecipes({
+            categoryIds:
+              filters.category.length > 0 ? filters.category : undefined,
+            ingredientIds:
+              filters.ingredient.length > 0 ? filters.ingredient : undefined,
+            page: pagination.current,
+            limit: pagination.pageSize,
+          });
+        } else {
+          // Use getRecipes for search or no filters
+          response = await recipeService.getRecipes({
+            page: pagination.current,
+            limit: pagination.pageSize,
+            search: filters.search,
+          });
+        }
+        setRecipes(response.data || []);
+        setPagination({
+          ...pagination,
+          total: response.meta.total || 0,
+        });
+      } catch (error) {
+        console.error("Error fetching recipes:", error);
+        setRecipes([]);
+        setPagination({ ...pagination, total: 0 });
       } finally {
         setLoading(false);
       }
     };
-
-    fetchInitialData();
-  }, [fetchCategories, fetchIngredients]);
-
-  // Debounced fetch for recipes
-  const fetchRecipes = useCallback(
-    debounce(async () => {
-      try {
-        setLoading(true);
-        const params = {
-          page: currentPage,
-          limit: recipesPerPage,
-          search: searchQuery || undefined,
-          category: selectedCategory.length > 0 ? selectedCategory : undefined, // Pass as array
-          ingredients:
-            selectedIngredients.length > 0 ? selectedIngredients : undefined, // Pass as array
-        };
-        console.log("Fetching recipes with params:", params); // Debug log
-        const response = await categoryService.getRecipes(params);
-        console.log("Raw API response:", response); // Debug log
-        const recipesData = Array.isArray(response.data)
-          ? response.data
-          : Array.isArray(response?.data?.recipes)
-          ? response.data.recipes
-          : [];
-        console.log("Processed recipes:", recipesData); // Debug log
-        setRecipes(recipesData);
-        setTotalRecipes(response.total || recipesData.length);
-      } catch (err) {
-        const errorMessage = err.message || "Failed to fetch recipes";
-        setError(errorMessage);
-        message.error(errorMessage);
-      } finally {
-        setLoading(false);
-      }
-    }, 500),
-    [currentPage, searchQuery, selectedCategory, selectedIngredients]
-  );
-
-  // Fetch recipes whenever filters or page changes
-  useEffect(() => {
     fetchRecipes();
-  }, [fetchRecipes]);
+  }, [pagination.current, pagination.pageSize, filters]);
 
-  // Handle category search
-  const handleCategorySearch = (value) => {
-    setCategorySearchQuery(value);
-    fetchCategories(value);
+  const handleSearch = (value) => {
+    setFilters({ ...filters, search: value });
+    setPagination({ ...pagination, current: 1 });
   };
 
-  // Handle ingredient search
-  const handleIngredientSearch = (value) => {
-    setIngredientSearchQuery(value);
-    fetchIngredients(value);
+  const handleCategoryChange = (value) => {
+    setFilters({ ...filters, category: value });
+    setPagination({ ...pagination, current: 1 });
   };
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  const handleIngredientChange = (value) => {
+    setFilters({ ...filters, ingredient: value });
+    setPagination({ ...pagination, current: 1 });
   };
 
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-    setCurrentPage(1);
-  };
-
-  const handleCategoryChange = (values) => {
-    console.log("Selected categories:", values); // Debug log
-    setSelectedCategory(values);
-    setCurrentPage(1);
-  };
-
-  const handleIngredientChange = (values) => {
-    console.log("Selected ingredients:", values); // Debug log
-    setSelectedIngredients(values);
-    setCurrentPage(1);
+  const handlePaginationChange = (page, pageSize) => {
+    setPagination({ ...pagination, current: page, pageSize });
   };
 
   return (
-    <div className={styles.allRecipesContainer}>
-      <div className={styles.sidebar}>
-        <h2 className={styles.sidebarTitle}>Filter Recipes</h2>
-        <div className={styles.filterSection}>
-          <Input
-            placeholder="Search recipes..."
-            prefix={<SearchOutlined />}
-            value={searchQuery}
-            onChange={handleSearchChange}
-            className={styles.searchInput}
-          />
-        </div>
-        <div className={styles.filterSection}>
-          <h3>Category</h3>
-          <Select
-            mode="multiple"
-            showSearch
-            placeholder="Search categories..."
-            onSearch={handleCategorySearch}
-            onChange={handleCategoryChange}
-            value={selectedCategory}
-            allowClear
-            filterOption={false}
-            className={styles.filterSelect}
-          >
-            {categories.map((category) => (
-              <Option key={category.category_id} value={category.category_name}>
-                {category.category_name}
-              </Option>
-            ))}
-          </Select>
-        </div>
-        <div className={styles.filterSection}>
-          <h3>Ingredients</h3>
-          <Select
-            mode="multiple"
-            showSearch
-            placeholder="Search ingredients..."
-            onSearch={handleIngredientSearch}
-            onChange={handleIngredientChange}
-            value={selectedIngredients}
-            allowClear
-            filterOption={false}
-            className={styles.filterSelect}
-          >
-            {ingredients.map((ingredient) => (
-              <Option
-                key={ingredient.ingredient_id}
-                value={ingredient.ingredient_name}
-              >
-                {ingredient.ingredient_name}
-              </Option>
-            ))}
-          </Select>
-        </div>
-      </div>
-
-      <div className={styles.recipesSection}>
-        {loading ? (
-          <div className={styles.loading}>
-            <Spin size="large" />
-          </div>
-        ) : error ? (
-          <div className={styles.error}>
-            <p>{error}</p>
-          </div>
-        ) : (
-          <>
-            <div className={styles.recipesGrid}>
-              {recipes.length > 0 ? (
-                recipes.map((recipe) => (
-                  <Card
-                    key={recipe.recipe_id}
-                    hoverable
-                    className={styles.recipeCard}
-                    cover={
-                      <img
-                        alt={recipe.recipe_name}
-                        src={recipe.image || "/images/recipes/placeholder.jpg"}
-                      />
-                    }
-                  >
-                    <div className={styles.recipeInfo}>
-                      <h3 className={styles.recipeTitle}>
-                        {recipe.recipe_name}
-                      </h3>
-                      <p className={styles.recipeAuthor}>
-                        By {recipe.author || "Unknown"}
-                      </p>
-                      <div className={styles.recipeMeta}>
-                        <Rate
-                          disabled
-                          allowHalf
-                          value={recipe.rating || 0}
-                          className={styles.recipeRating}
-                        />
-                        <span className={styles.recipeReviews}>
-                          ({recipe.reviews || 0})
-                        </span>
-                        <span className={styles.recipeTime}>
-                          {recipe.time || "N/A"}
-                        </span>
-                      </div>
-                    </div>
-                  </Card>
-                ))
-              ) : (
-                <p>No recipes found.</p>
-              )}
+    <div className={styles.container}>
+      <Row gutter={[16, 16]}>
+        {/* Sidebar */}
+        <Col xs={24} md={6}>
+          <div className={styles.sidebar}>
+            <h2>Filters</h2>
+            <div className={styles.filterSection}>
+              <h3>Search</h3>
+              <Search
+                placeholder="Search recipes..."
+                onSearch={handleSearch}
+                allowClear
+                className={styles.searchInput}
+              />
             </div>
-            {totalRecipes > 0 && (
-              <div className={styles.pagination}>
+            <div className={styles.filterSection}>
+              <h3>Categories</h3>
+              <Select
+                mode="multiple"
+                placeholder="Select categories"
+                onChange={handleCategoryChange}
+                value={filters.category}
+                className={styles.selectInput}
+                allowClear
+              >
+                {categories.map((category) => (
+                  <Option
+                    key={category.category_id}
+                    value={category.category_id}
+                  >
+                    {category.category_name}
+                  </Option>
+                ))}
+              </Select>
+            </div>
+            <div className={styles.filterSection}>
+              <h3>Ingredients</h3>
+              <Select
+                mode="multiple"
+                placeholder="Select ingredients"
+                onChange={handleIngredientChange}
+                value={filters.ingredient}
+                className={styles.selectInput}
+                allowClear
+              >
+                {ingredients.map((ingredient) => (
+                  <Option
+                    key={ingredient.ingredient_id}
+                    value={ingredient.ingredient_id}
+                  >
+                    {ingredient.ingredient_name}
+                  </Option>
+                ))}
+              </Select>
+            </div>
+          </div>
+        </Col>
+
+        {/* Main Content */}
+        <Col xs={24} md={18}>
+          <div className={styles.recipeList}>
+            <h2>All Recipes</h2>
+            {loading ? (
+              <Spin size="large" className={styles.spinner} />
+            ) : recipes.length === 0 ? (
+              <Empty description="No recipes found" />
+            ) : (
+              <>
+                <Row gutter={[16, 16]}>
+                  {recipes.map((recipe) => (
+                    <Col xs={24} sm={12} md={6} key={recipe.recipe_id}>
+                      <Link to={`/detail/${recipe.recipe_id}`}>
+                        <Card
+                          hoverable
+                          cover={
+                            recipe.images && recipe.images.length > 0 ? (
+                              <Image
+                                src={recipe.images[0]}
+                                alt={recipe.recipe_name}
+                                className={styles.recipeImage}
+                              />
+                            ) : (
+                              <div className={styles.placeholderImage}>
+                                No Image
+                              </div>
+                            )
+                          }
+                          className={styles.recipeCard}
+                        >
+                          <Card.Meta title={recipe.recipe_name} />
+                        </Card>
+                      </Link>
+                    </Col>
+                  ))}
+                </Row>
                 <Pagination
-                  current={currentPage}
-                  pageSize={recipesPerPage}
-                  total={totalRecipes}
-                  onChange={handlePageChange}
-                  showSizeChanger={false}
+                  current={pagination.current}
+                  pageSize={pagination.pageSize}
+                  total={pagination.total}
+                  onChange={handlePaginationChange}
+                  className={styles.pagination}
+                  showSizeChanger
                 />
-              </div>
+              </>
             )}
-          </>
-        )}
-      </div>
+          </div>
+        </Col>
+      </Row>
     </div>
   );
-}
+};
+
+export default AllRecipes;

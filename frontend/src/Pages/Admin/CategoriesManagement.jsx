@@ -1,199 +1,150 @@
 import React, { useState, useEffect } from "react";
-import styles from "./CategoriesManagement.module.scss";
-import { Button, Card, Pagination, Input, Form } from "antd";
-import { categoryService } from "../../services/categoryService"; // Adjust path as needed
+import { Table, Button, message, Input, Space, Image } from "antd";
+import { categoryService } from "../../services/categoryService"; // Adjust the import path as needed
+import "./CategoriesManagement.module.scss";
 
-const CategoriesManagement = ({ limit = 5 }) => {
+const { Search } = Input;
+
+const CategoriesManagement = () => {
   const [categories, setCategories] = useState([]);
-  const [categoryMeta, setCategoryMeta] = useState(null);
-  const [categoryPage, setCategoryPage] = useState(1);
-  const [categoriesLoading, setCategoriesLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [isEditing, setIsEditing] = useState(false);
-  const [editingCategory, setEditingCategory] = useState(null);
-  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
+  });
 
-  // Fetch all categories when component mounts or categoryPage/limit changes
-  useEffect(() => {
-    console.log(
-      "useEffect triggered with categoryPage:",
-      categoryPage,
-      "limit:",
-      limit
-    );
-
-    const fetchCategories = async () => {
-      setCategoriesLoading(true);
-      try {
-        const response = await categoryService.getCategories({
-          page: categoryPage,
-          limit,
-        });
-        console.log("Fetched categories response:", response);
-        const fetchedCategories = response.data || [];
-        console.log("Setting categories:", fetchedCategories);
-        setCategories(fetchedCategories);
-        setCategoryMeta(response.meta || null);
-        setError("");
-      } catch (err) {
-        console.error("Error fetching categories:", err.message);
-        setError(err.message || "Failed to fetch categories");
-        setCategories([]);
-      } finally {
-        setCategoriesLoading(false);
-      }
-    };
-
-    fetchCategories();
-  }, [categoryPage, limit]);
-
-  // Handle category deletion
-  const handleDeleteCategory = async (id) => {
+  // Fetch categories on component mount or when pagination/search changes
+  const fetchCategories = async (page = 1, pageSize = 10, searchQuery = "") => {
+    setLoading(true);
     try {
-      await categoryService.deleteCategory(id);
-      const response = await categoryService.getCategories({
-        page: categoryPage,
-        limit,
+      const params = {
+        page,
+        limit: pageSize,
+      };
+      let response;
+      if (searchQuery) {
+        response = await categoryService.getCategoriesByName(
+          searchQuery,
+          params
+        );
+      } else {
+        response = await categoryService.getCategories(params);
+      }
+      setCategories(response.data);
+      setPagination({
+        current: response.meta.page,
+        pageSize: response.meta.limit,
+        total: response.meta.total,
       });
-      console.log("Post-deletion categories response:", response);
-      setCategories(response.data || []);
-      setCategoryMeta(response.meta || null);
-      setError("");
-    } catch (err) {
-      console.error("Error deleting category:", err.message);
-      setError(err.message || "Failed to delete category");
+    } catch (error) {
+      message.error(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Handle form submission for editing a category
-  const handleFormSubmit = async (values) => {
+  // Initial fetch
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  // Handle pagination change
+  const handleTableChange = (pagination) => {
+    fetchCategories(pagination.current, pagination.pageSize);
+  };
+
+  // Handle search
+  const handleSearch = (value) => {
+    fetchCategories(1, pagination.pageSize, value);
+  };
+
+  // Handle delete category
+  const handleDelete = async (categoryId) => {
     try {
-      if (isEditing && editingCategory) {
-        // Send category_name instead of name
-        await categoryService.updateCategory(editingCategory.category_id, {
-          category_name: values.category_name,
-        });
-        const response = await categoryService.getCategories({
-          page: categoryPage,
-          limit,
-        });
-        console.log("Post-update categories response:", response);
-        setCategories(response.data || []);
-        setCategoryMeta(response.meta || null);
-        setError("");
-        setIsEditing(false);
-        setEditingCategory(null);
-        form.resetFields();
-      }
-    } catch (err) {
-      console.error("Error updating category:", err.message);
-      setError(err.message || "Failed to update category");
+      await categoryService.deleteCategory(categoryId);
+      message.success("Category deleted successfully");
+      fetchCategories(pagination.current, pagination.pageSize);
+    } catch (error) {
+      message.error(error.message);
     }
   };
 
-  // Handle edit button click
-  const handleEditCategory = (category) => {
-    console.log("Editing category:", category);
-    setIsEditing(true);
-    setEditingCategory(category);
-    form.setFieldsValue({
-      category_name: category.category_name || "",
-    });
-  };
-
-  // Handle cancel edit
-  const handleCancelEdit = () => {
-    setIsEditing(false);
-    setEditingCategory(null);
-    form.resetFields();
-  };
-
-  console.log("Rendering CategoriesManagement, categories:", categories);
+  // Define table columns
+  const columns = [
+    {
+      title: "ID",
+      dataIndex: "category_id",
+      key: "category_id",
+    },
+    {
+      title: "Category Name",
+      dataIndex: "category_name",
+      key: "category_name",
+    },
+    {
+      title: "Images",
+      dataIndex: "images",
+      key: "images",
+      render: (images) => (
+        <Space>
+          {images && images.length > 0 ? (
+            images.map((img, index) => (
+              <Image
+                key={index}
+                src={img}
+                alt={`Category image ${index + 1}`}
+                width={50}
+                height={50}
+                style={{ objectFit: "cover" }}
+              />
+            ))
+          ) : (
+            <span>No images</span>
+          )}
+        </Space>
+      ),
+    },
+    {
+      title: "Action",
+      key: "action",
+      render: (_, record) => (
+        <Space className="action-buttons">
+          <Button
+            className="delete-button"
+            onClick={() => handleDelete(record.category_id)}
+          >
+            DELETE
+          </Button>
+        </Space>
+      ),
+    },
+  ];
 
   return (
-    <div className={styles.categoriesManagement}>
-      <h2>Manage Categories</h2>
-      {error && <p className={styles.error}>{error}</p>}
-
-      {/* Edit form (only shown when editing) */}
-      {isEditing && (
-        <Form
-          form={form}
-          onFinish={handleFormSubmit}
-          layout="vertical"
-          className={styles.editForm}
-        >
-          <Form.Item
-            name="category_name"
-            label="Category Name"
-            rules={[
-              { required: true, message: "Please enter a category name" },
-            ]}
-          >
-            <Input placeholder="Enter category name" />
-          </Form.Item>
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              className={styles.submitButton}
-            >
-              Update Category
-            </Button>
-            <Button onClick={handleCancelEdit} className={styles.cancelButton}>
-              Cancel
-            </Button>
-          </Form.Item>
-        </Form>
-      )}
-
-      {/* Category list */}
-      {categoriesLoading ? (
-        <p>Loading...</p>
-      ) : !categories ||
-        !Array.isArray(categories) ||
-        categories.length === 0 ? (
-        <p>No categories available</p>
-      ) : (
-        <div className={styles.categoryList}>
-          {categories.map((category) => {
-            console.log("Rendering category:", category);
-            return (
-              <Card key={category.category_id} className={styles.categoryCard}>
-                <div className={styles.categoryContent}>
-                  <h3>{category.category_name || "Unnamed Category"}</h3>
-                </div>
-                <div className={styles.categoryActions}>
-                  <Button
-                    onClick={() => handleEditCategory(category)}
-                    className={styles.editButton}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    danger
-                    onClick={() => handleDeleteCategory(category.category_id)}
-                    className={styles.deleteButton}
-                  >
-                    Delete
-                  </Button>
-                </div>
-              </Card>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Pagination */}
-      {categoryMeta && categories && categories.length > 0 && (
-        <Pagination
-          current={categoryPage}
-          pageSize={limit}
-          total={categoryMeta.total}
-          onChange={setCategoryPage}
-          className={styles.pagination}
+    <div className="categories-management">
+      <div className="header">
+        <h2>Admin Categories</h2>
+        <Search
+          placeholder="Search categories by name"
+          onSearch={handleSearch}
+          style={{ width: 300 }}
+          allowClear
         />
-      )}
+      </div>
+      <Table
+        dataSource={categories}
+        columns={columns}
+        rowKey="category_id"
+        loading={loading}
+        pagination={{
+          current: pagination.current,
+          pageSize: pagination.pageSize,
+          total: pagination.total,
+          showSizeChanger: true,
+        }}
+        onChange={handleTableChange}
+      />
     </div>
   );
 };

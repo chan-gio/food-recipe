@@ -1,0 +1,373 @@
+:global {
+  .admin-recipe-modal {
+    .ant-modal-content {
+      border-radius: 8px !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .ant-modal-header {
+      background-color: #f0f2f5 !important;
+      border-bottom: 1px solid #e8e8e8 !important;
+    }
+
+    .ant-modal-title {
+      font-size: 18px !important;
+      color: #333 !important;
+      font-weight: bold !important;
+    }
+
+    .ant-modal-body {
+      padding: 20px !important;
+      max-height: 70vh !important;
+      overflow-y: auto !important;
+    }
+
+    .ant-modal-footer {
+      border-top: 1px solid #e8e8e8 !important;
+      padding: 10px 16px !important;
+    }
+
+    .modal-container {
+      padding: 0 !important;
+    }
+
+    .skeleton-reviews-section {
+      width: 100% !important;
+    }
+
+    .title {
+      font-size: 28px !important;
+      font-weight: bold !important;
+      margin-bottom: 10px !important;
+      text-transform: uppercase !important;
+      width: 100% !important;
+      text-align: left !important;
+      color: #333 !important;
+    }
+
+    .rating {
+      display: flex !important;
+      align-items: center !important;
+      margin-bottom: 10px !important;
+      width: 100% !important;
+      justify-content: flex-start !important;
+    }
+
+    .review-count {
+      margin-left: 5px !important;
+      font-size: 14px !important;
+      color: #666 !important;
+    }
+
+    .submitted {
+      display: flex !important;
+      align-items: center !important;
+      margin-bottom: 10px !important;
+      position: relative !important;
+      width: 100% !important;
+      justify-content: flex-start !important;
+    }
+
+    .submitted-text {
+      margin-left: 10px !important;
+      font-size: 14px !important;
+      color: #ff6600 !important;
+    }
+
+    .dots {
+      position: absolute !important;
+      right: 0 !important;
+      font-size: 20px !important;
+      color: #999 !important;
+    }
+
+    .description {
+      font-size: 16px !important;
+      color: #666 !important;
+      margin-bottom: 20px !important;
+      font-style: italic !important;
+      width: 100% !important;
+      text-align: left !important;
+      line-height: 1.6 !important;
+    }
+
+    .actions {
+      display: flex !important;
+      gap: 10px !important;
+      width: 100% !important;
+      margin-bottom: 20px !important;
+      justify-content: flex-start !important;
+    }
+
+    .divider {
+      margin: 20px 0 !important;
+      border-top: 1px solid #e8e8e8 !important;
+    }
+
+    .image-section {
+      width: 100% !important;
+      margin-bottom: 20px !important;
+    }
+
+    .main-image-container {
+      position: relative !important;
+      width: 100% !important;
+      height: 400px !important;
+    }
+
+    .carousel {
+      width: 100% !important;
+      height: 400px !important;
+    }
+
+    .main-image {
+      width: 100% !important;
+      height: 400px !important;
+      object-fit: cover !important;
+      border-radius: 8px !important;
+    }
+
+    .image-credit {
+      position: absolute !important;
+      bottom: 10px !important;
+      right: 10px !important;
+      background: rgba(0, 0, 0, 0.5) !important;
+      color: white !important;
+      padding: 5px 10px !important;
+      font-size: 12px !important;
+      border-radius: 5px !important;
+    }
+
+    .video-container {
+      display: flex !important;
+      flex-wrap: wrap !important;
+      gap: 10px !important;
+      margin-top: 10px !important;
+    }
+
+    .video {
+      width: 300px !important;
+      height: 200px !important;
+      border-radius: 8px !important;
+    }
+
+    .info-section {
+      width: 100% !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 10px !important;
+      margin-bottom: 20px !important;
+    }
+
+    .info-item {
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      width: 100% !important;
+    }
+
+    .info-label {
+      font-size: 16px !important;
+      color: #333 !important;
+    }
+
+    .ant-rate-star {
+      color: #ff4d4f !important;
+    }
+
+    .recipe-details {
+      width: 100% !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      gap: 20px !important;
+    }
+
+    .directions {
+      flex: 1 !important;
+      text-align: left !important;
+    }
+
+    .section-title {
+      font-size: 18px !important;
+      font-weight: bold !important;
+      color: #ff6600 !important;
+      margin-bottom: 10px !important;
+    }
+
+    .direction-list {
+      padding-left: 20px !important;
+      list-style-position: outside !important;
+      color: #333 !important;
+    }
+
+    .direction-list li {
+      font-size: 14px !important;
+      margin-bottom: 10px !important;
+      line-height: 1.5 !important;
+    }
+
+    .ingredients {
+      flex: 1 !important;
+      text-align: left !important;
+    }
+
+    .units {
+      font-size: 14px !important;
+      color: #ff6600 !important;
+      margin-bottom: 10px !important;
+    }
+
+    .ingredient-list {
+      padding-left: 20px !important;
+      list-style-position: outside !important;
+      color: #333 !important;
+    }
+
+    .ingredient-list li {
+      font-size: 14px !important;
+      margin-bottom: 5px !important;
+      line-height: 1.5 !important;
+    }
+
+    .reviews-section {
+      width: 100% !important;
+    }
+
+    .reviews-header {
+      display: flex !important;
+      align-items: center !important;
+      margin-bottom: 20px !important;
+    }
+
+    .sort-select {
+      margin-left: auto !important;
+      margin-right: 10px !important;
+    }
+
+    .review {
+      text-align: left !important;
+      margin-bottom: 20px !important;
+    }
+
+    .review-header {
+      display: flex !important;
+      align-items: center !important;
+      position: relative !important;
+      margin-bottom: 10px !important;
+    }
+
+    .review-rating {
+      margin-right: 10px !important;
+    }
+
+    .review-dots {
+      position: absolute !important;
+      right: 0 !important;
+      font-size: 20px !important;
+      color: #999 !important;
+    }
+
+    .review-content {
+      font-size: 14px !important;
+      color: #333 !important;
+      margin-bottom: 10px !important;
+      line-height: 1.5 !important;
+    }
+
+    .review-footer {
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+    }
+
+    .reviewer {
+      font-size: 14px !important;
+      color: #ff6600 !important;
+    }
+
+    .timestamp {
+      font-size: 12px !important;
+      color: #666 !important;
+    }
+
+    .review-divider {
+      margin: 10px 0 !important;
+      border-top: 1px solid #e8e8e8 !important;
+    }
+
+    .review {
+      background-color: #fff !important;
+      padding: 15px !important;
+      margin-bottom: 10px !important;
+      border-radius: 8px !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+      transition: background-color 0.2s ease !important;
+    }
+
+    .top-level-review {
+      background-color: #f9f9f9 !important;
+      border: 1px solid #e8e8e8 !important;
+    }
+
+    .reply-review {
+      background-color: #f0f7ff !important;
+      border-left: 3px solid #1890ff !important;
+      margin-left: 20px !important;
+    }
+
+    .review:hover {
+      background-color: #f5f5f5 !important;
+    }
+
+    .replies {
+      margin-top: 10px !important;
+    }
+
+    .toggle-replies-button {
+      padding: 0 !important;
+      font-size: 12px !important;
+      color: #1890ff !important;
+      margin-left: 10px !important;
+    }
+
+    .review-header {
+      display: flex !important;
+      align-items: center !important;
+      margin-bottom: 10px !important;
+    }
+
+    .review-rating {
+      margin-left: 10px !important;
+    }
+
+    .review-dots {
+      flex-grow: 1 !important;
+      text-align: right !important;
+    }
+
+    .review-content {
+      margin-bottom: 10px !important;
+      color: #333 !important;
+    }
+
+    .review-footer {
+      display: flex !important;
+      align-items: center !important;
+      color: #888 !important;
+      font-size: 12px !important;
+    }
+
+    .reviewer {
+      margin-right: 10px !important;
+    }
+
+    .timestamp {
+      margin-right: 10px !important;
+    }
+
+    .review-divider {
+      margin: 10px 0 !important;
+    }
+  }
+}

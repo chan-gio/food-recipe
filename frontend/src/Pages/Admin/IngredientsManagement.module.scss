@@ -1,5 +1,5 @@
 :global {
-  .categories-management {
+  .ingredients-management {
     padding: 20px !important;
 
     .header {
@@ -12,21 +12,6 @@
         margin: 0 !important;
         font-size: 20px !important;
         color: #333 !important;
-      }
-
-      .header-actions {
-        display: flex !important;
-        align-items: center !important;
-        gap: 16px !important;
-      }
-
-      .add-button {
-        background-color: #1890ff !important;
-        color: white !important;
-        border: none !important;
-        &:hover {
-          background-color: #40a9ff !important;
-        }
       }
     }
 
