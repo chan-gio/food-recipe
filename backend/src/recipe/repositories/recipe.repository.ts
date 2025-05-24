@@ -5,6 +5,7 @@ import { Recipe } from '../entities/recipe.entity';
 import { IRecipeRepository } from '../../common/interfaces/recipe.repository.interface';
 import { PaginationDto } from 'src/common/dots/pagination.dto';
 import { FilterRecipeDto } from '../dtos/filter-recipe.dto';
+import { TopContributor } from 'src/common/types/response.type';
 
 @Injectable()
 export class RecipeRepository implements IRecipeRepository {
@@ -120,6 +121,79 @@ export class RecipeRepository implements IRecipeRepository {
       return { data, total };
     } catch (error) {
       this.logger.error(`Failed to filter recipes: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  async getTopContributors(limit: number): Promise<TopContributor[]> {
+    try {
+      const topContributors = await this.recipeRepo
+        .createQueryBuilder('recipe')
+        .select('recipe.user_id', 'userId')
+        .addSelect('user.full_name', 'fullName')
+        .addSelect('COUNT(recipe.recipe_id)', 'recipeCount')
+        .leftJoin('recipe.user', 'user')
+        .groupBy('recipe.user_id')
+        .addGroupBy('user.full_name')
+        .orderBy('recipeCount', 'DESC')
+        .limit(limit)
+        .getRawMany();
+
+      const result = topContributors.map((entry) => ({
+        userId: entry.userId,
+        fullName: entry.fullName || 'Unknown User',
+        recipeCount: parseInt(entry.recipeCount, 10),
+      }));
+
+      this.logger.log(`Fetched top ${limit} contributors: ${JSON.stringify(result)}`);
+      return result;
+    } catch (error) {
+      this.logger.error(`Failed to fetch top contributors: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  async getMostFavoritedRecipes(limit: number): Promise<Recipe[]> {
+    try {
+      const queryBuilder = this.recipeRepo
+        .createQueryBuilder('recipe')
+        .leftJoin('recipe.favorites', 'favorites')
+        .groupBy('recipe.recipe_id')
+        .orderBy('COUNT(favorites.user_id)', 'DESC')
+        .limit(limit)
+        .select([
+          'recipe.recipe_id',
+          'recipe.recipe_name',
+          'recipe.images',
+          'COUNT(favorites.user_id) as favoriteCount',
+        ])
+  
+      // Use getRawAndEntities to debug
+      const { entities } = await queryBuilder.getRawAndEntities();
+
+      return entities;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async searchRecipesByName(name: string, paginationDto: PaginationDto): Promise<{ data: Recipe[]; total: number }> {
+    try {
+      const { page = 1, limit = 10 } = paginationDto;
+      const skip = (page - 1) * limit;
+  
+      const queryBuilder = this.recipeRepo
+        .createQueryBuilder('recipe')
+        .where('recipe.recipe_name LIKE :name', { name: `%${name}%` }) 
+        .skip(skip)
+        .take(limit)
+        .orderBy('recipe.created_at', 'DESC')
+        // .loadAllRelationIds({ relations: ['user', 'categories', 'ingredients', 'instructions', 'reviews', 'reviews.user'] });
+  
+      const [data, total] = await queryBuilder.getManyAndCount();
+  
+      return { data, total };
+    } catch (error) {
       throw error;
     }
   }

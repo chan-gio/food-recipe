@@ -9,3 +9,9 @@ export interface Response<T> {
   message: string;
   code: number;
 }
+
+export interface TopContributor {
+  userId: number;
+  fullName: string;
+  recipeCount: number;
+}

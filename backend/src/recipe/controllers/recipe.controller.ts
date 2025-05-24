@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Put, Delete, Param, Body, ParseIntPipe, UsePipes, ValidationPipe, UseInterceptors, UploadedFiles, Inject, Query, BadRequestException, Logger } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { IRecipeService } from '../../common/interfaces/recipe.service.interface';
-import { Response } from '../../common/types/response.type';
+import { Response, TopContributor } from '../../common/types/response.type';
 import { Recipe } from '../entities/recipe.entity';
 import { CreateRecipeDto } from '../dtos/create-recipe.dto';
 import { UpdateRecipeDto } from '../dtos/update-recipe.dto';
@@ -17,7 +17,7 @@ export class RecipeController {
   constructor(
     @Inject('IRecipeService')
     private readonly recipeService: IRecipeService,
-  ) {}
+  ) { }
 
   @Get()
   @UsePipes(new ValidationPipe({ whitelist: true }))
@@ -55,8 +55,8 @@ export class RecipeController {
       code: 200,
     };
   }
-  
-    @Get('filter')
+
+  @Get('filter')
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true, transformOptions: { enableImplicitConversion: true } }))
   async filterRecipes(
     @Query() filterDto: FilterRecipeDto,
@@ -100,7 +100,52 @@ export class RecipeController {
       message: 'Filtered recipes retrieved successfully',
       code: 200,
     };
-  }z
+  }
+
+  @Get('users/top-contributors')
+  async getTopContributors(): Promise<Response<TopContributor[]>> {
+    const data = await this.recipeService.getTopContributors(3); // Limit to top 3
+    return {
+      data,
+      message: 'Top contributors retrieved successfully',
+      code: 200,
+    };
+  }
+
+  @Get('most-favorited')
+  async getMostFavoritedRecipes(): Promise<Response<Recipe[]>> {
+    const data = await this.recipeService.getMostFavoritedRecipes(5);
+    return {
+      data,
+      message: 'Most favorited recipes retrieved successfully',
+      code: 200,
+    };
+  }
+
+  @Get('search')
+  @UsePipes(new ValidationPipe({ whitelist: true }))
+  async searchRecipesByName(
+    @Query('name') name: string,
+    @Query() paginationDto: PaginationDto,
+  ): Promise<Response<Recipe[]>> {
+
+    if (!name || typeof name !== 'string' || name.trim() === '') {
+      throw new BadRequestException('Query parameter "name" must be a non-empty string');
+    }
+
+    const { data, total } = await this.recipeService.searchRecipesByName(name, paginationDto);
+    return {
+      data,
+      meta: {
+        total,
+        page: paginationDto.page ?? 1,
+        limit: paginationDto.limit ?? 10,
+        totalPages: Math.ceil(total / (paginationDto.limit ?? 10)),
+      },
+      message: 'Recipes retrieved successfully',
+      code: 200,
+    };
+  }
 
   @Get(':id')
   async getRecipeById(@Param('id', ParseIntPipe) id: number): Promise<Response<Recipe>> {

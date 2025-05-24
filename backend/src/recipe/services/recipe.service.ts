@@ -8,6 +8,7 @@ import { DataSource } from 'typeorm';
 import { IRecipeService } from 'src/common/interfaces/recipe.service.interface';
 import { PaginationDto } from 'src/common/dots/pagination.dto';
 import { FilterRecipeDto } from 'src/recipe/dtos/filter-recipe.dto';
+import { TopContributor } from 'src/common/types/response.type';
 
 @Injectable()
 export class RecipeService implements IRecipeService {
@@ -40,6 +41,18 @@ export class RecipeService implements IRecipeService {
 
   async filterRecipes(filterDto: FilterRecipeDto, paginationDto: PaginationDto): Promise<{ data: Recipe[]; total: number }> {
     return this.recipeRepository.filterRecipes(filterDto, paginationDto);
+  }
+
+  async getTopContributors(limit: number): Promise<TopContributor[]> {
+    return this.recipeRepository.getTopContributors(limit);
+  }
+
+  async getMostFavoritedRecipes(limit: number): Promise<Recipe[]> {
+    return this.recipeRepository.getMostFavoritedRecipes(limit);
+  }
+  
+  async searchRecipesByName(name: string, paginationDto: PaginationDto): Promise<{ data: Recipe[]; total: number }> {
+    return this.recipeRepository.searchRecipesByName(name, paginationDto);
   }
 
   async createRecipe(dto: CreateRecipeDto, userId: number, files?: { images?: Express.Multer.File[]; videos?: Express.Multer.File[] }): Promise<Recipe> {
