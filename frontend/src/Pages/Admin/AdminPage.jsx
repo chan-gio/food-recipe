@@ -6,7 +6,7 @@ const AdminPage = () => {
   return (
     <div className={styles.adminPage}>
       <div className={styles.sidebar}>
-        <h2>Quản trị</h2>
+        <h2>Management</h2>
         <nav>
           <NavLink
             to="/admin/recipes"
@@ -14,7 +14,7 @@ const AdminPage = () => {
               `${styles.navButton} ${isActive ? styles.active : ""}`
             }
           >
-            Quản lý Công thức
+            Recipes Mangement
           </NavLink>
           <NavLink
             to="/admin/users"
@@ -22,7 +22,15 @@ const AdminPage = () => {
               `${styles.navButton} ${isActive ? styles.active : ""}`
             }
           >
-            Quản lý Người dùng
+            Users Mangement
+          </NavLink>
+          <NavLink
+            to="/admin/categories"
+            className={({ isActive }) =>
+              `${styles.navButton} ${isActive ? styles.active : ""}`
+            }
+          >
+            Categories Management
           </NavLink>
         </nav>
       </div>

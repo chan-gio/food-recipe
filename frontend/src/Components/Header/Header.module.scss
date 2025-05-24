@@ -4,7 +4,7 @@
   align-items: center;
   padding: 0 20px;
   background-color: #ff6600;
-  height: 64px;
+  height: 70px;
   position: relative;
 
   @media (max-width: 768px) {
@@ -119,4 +119,38 @@
   .ant-input-search-button .anticon {
     color: #ff6600 !important;
   }
+}
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #f28c38; /* Matches the orange color in the screenshot */
+}
+
+.logo {
+  float: left;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.logoImage {
+  height: 80px; /* Increased from 40px to make the logo larger */
+  width: 150px;
+  object-fit: cover;
+  display: inherit;
+}
+
+.menu {
+  flex: 1;
+  justify-content: flex-end;
+  background-color: #f28c38; /* Matches the orange color */
+}
+
+.searchItem {
+  margin-left: auto;
+}
+
+.searchInput {
+  width: 200px;
 }

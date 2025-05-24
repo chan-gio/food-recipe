@@ -8,7 +8,12 @@ const RecipeForm = lazy(() => import("../Pages/ManageRecipe/RecipeForm"));
 const AdminPage = lazy(() => import("../Pages/Admin/AdminPage"));
 const RecipeManagement = lazy(() => import("../Pages/Admin/RecipeManagement"));
 const UserManagement = lazy(() => import("../Pages/Admin/UserManagement"));
+const AllRecipes = lazy(() => import("../Pages/AllRecipes/AllRecipes"));
+const CategoriesManagement = lazy(() =>
+  import("../Pages/Admin/CategoriesManagement")
+);
 const Users = lazy(() => import("../Pages/Users/User"));
+
 const Routes = [
   { path: "/", component: <Homepage /> },
   { path: "/profile", component: <ProfilePage /> },
@@ -17,6 +22,7 @@ const Routes = [
   { path: "/recipeform", component: <RecipeForm /> },
   { path: "/recipeform/:id", component: <RecipeForm /> },
   { path: "/user", component: <Users /> },
+  { path: "/allrecipes", component: <AllRecipes /> },
   {
     path: "/admin",
     component: <AdminPage />,
@@ -24,6 +30,7 @@ const Routes = [
       { path: "", component: <RecipeManagement /> },
       { path: "recipes", component: <RecipeManagement /> },
       { path: "users", component: <UserManagement /> },
+      { path: "categories", component: <CategoriesManagement /> },
     ],
   },
 ];

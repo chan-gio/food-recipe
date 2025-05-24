@@ -1,97 +1,14 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import styles from "./HomePage.module.scss";
-import { Card, Avatar } from "antd";
+import { Card, Avatar, Spin, message } from "antd";
 import Slider from "react-slick";
 import { LeftOutlined, RightOutlined, UserOutlined } from "@ant-design/icons";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import { categoryService } from "../../services/categoryService";
 
-const categoriesData = [
-  {
-    category_id: 1,
-    category_name: "Italian",
-    recipes: [
-      {
-        recipe_id: 1,
-        recipe_name: "Spaghetti Bolognese",
-        description: "A classic Italian pasta dish with rich meat sauce.",
-        recipe_type: "Italian",
-        servings: 4,
-        prep_time: 15,
-        cook_time: 45,
-        created_at: "2025-05-07T16:20:37.000Z",
-        images: ["/images/recipes/spaghetti1.jpg"],
-        videos: ["/videos/recipes/spaghetti_cooking.mp4"],
-      },
-      {
-        recipe_id: 3,
-        recipe_name: "Margherita Pizza",
-        description: "Traditional Italian pizza with tomato and mozzarella.",
-        recipe_type: "Italian",
-        servings: 2,
-        prep_time: 20,
-        cook_time: 15,
-        created_at: "2025-05-07T16:20:37.000Z",
-        images: ["/images/recipes/pizza1.jpg"],
-        videos: [],
-      },
-      {
-        recipe_id: 4,
-        recipe_name: "Lasagna",
-        description: "Layered pasta with meat and cheese.",
-        recipe_type: "Italian",
-        servings: 6,
-        prep_time: 30,
-        cook_time: 60,
-        created_at: "2025-05-07T16:20:37.000Z",
-        images: ["/images/recipes/lasagna1.jpg"],
-        videos: [],
-      },
-    ],
-  },
-  {
-    category_id: 2,
-    category_name: "Barbecue",
-    recipes: [
-      {
-        recipe_id: 2,
-        recipe_name: "Barbecued Baby Back Ribs",
-        description: "Sticky BBQ ribs with homemade sauce.",
-        recipe_type: "Barbecue",
-        servings: 6,
-        prep_time: 20,
-        cook_time: 120,
-        created_at: "2025-05-07T16:20:37.000Z",
-        images: ["/images/recipes/ribs1.jpg"],
-        videos: [],
-      },
-      {
-        recipe_id: 5,
-        recipe_name: "Grilled Chicken Wings",
-        description: "Spicy BBQ wings with a smoky flavor.",
-        recipe_type: "Barbecue",
-        servings: 4,
-        prep_time: 15,
-        cook_time: 30,
-        created_at: "2025-05-07T16:20:37.000Z",
-        images: ["/images/recipes/wings1.jpg"],
-        videos: [],
-      },
-      {
-        recipe_id: 6,
-        recipe_name: "Pulled Pork",
-        description: "Slow-cooked pork with tangy BBQ sauce.",
-        recipe_type: "Barbecue",
-        servings: 8,
-        prep_time: 30,
-        cook_time: 360,
-        created_at: "2025-05-07T16:20:37.000Z",
-        images: ["/images/recipes/pork1.jpg"],
-        videos: [],
-      },
-    ],
-  },
-];
+// Import the banner image from assets
+import bannerImage from "../../assets/image/banner.png"; // Adjust the path as needed
 
 const topUsers = [
   {
@@ -117,12 +34,74 @@ const topUsers = [
   },
 ];
 
+// Static data for trending recipes
+const trendingRecipes = [
+  {
+    id: 1,
+    title: "Crispy Oven Baked Quesadillas",
+    description: "Life saver when you’ve got a table full of hungry teenagers!",
+    image: "/images/recipes/quesadillas.jpg",
+  },
+  {
+    id: 2,
+    title: "Thai Coconut Pumpkin Soup",
+    description: "",
+    image: "/images/recipes/pumpkin-soup.jpg",
+  },
+  {
+    id: 3,
+    title: "Creamy Tuscan Chicken Soup",
+    description: "",
+    image: "/images/recipes/tuscan-soup.jpg",
+  },
+  {
+    id: 4,
+    title: "Antipasto Chickpea Salad",
+    description: "",
+    image: "/images/recipes/chickpea-salad.jpg",
+  },
+  {
+    id: 5,
+    title: "The Most Amazing Canned Tuna Pasta",
+    description: "",
+    image: "/images/recipes/tuna-pasta.jpg",
+  },
+];
+
 export default function HomePage() {
   const sliderRef = useRef(null);
   const categorySliderRef = useRef(null);
-  const [selectedCategory, setSelectedCategory] = useState(
-    categoriesData[0].category_id
-  );
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoading(true);
+        const response = await categoryService.getCategories();
+        console.log("API Response:", response);
+        const categoriesData = Array.isArray(response)
+          ? response
+          : Array.isArray(response?.data)
+          ? response.data
+          : [];
+        setCategories(categoriesData);
+        if (categoriesData.length > 0) {
+          setSelectedCategory(categoriesData[0].category_id);
+        }
+      } catch (err) {
+        const errorMessage = err.message || "Failed to fetch categories";
+        setError(errorMessage);
+        message.error(errorMessage);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const recipeSettings = {
     centerMode: true,
@@ -132,7 +111,7 @@ export default function HomePage() {
     speed: 500,
     slidesToShow: 3,
     slidesToScroll: 1,
-    autoplay: true,
+    autoplay: false,
     arrows: false,
     responsive: [
       { breakpoint: 992, settings: { slidesToShow: 2 } },
@@ -148,11 +127,11 @@ export default function HomePage() {
     speed: 500,
     slidesToShow: 3,
     slidesToScroll: 1,
-    autoplay: true,
+    autoplay: false,
     autoplaySpeed: 3000,
     arrows: false,
     beforeChange: (oldIndex, newIndex) => {
-      setSelectedCategory(categoriesData[newIndex].category_id);
+      setSelectedCategory(categories[newIndex]?.category_id);
     },
     responsive: [
       { breakpoint: 992, settings: { slidesToShow: 2 } },
@@ -165,102 +144,182 @@ export default function HomePage() {
     categorySliderRef.current?.slickGoTo(index);
   };
 
-  const selectedRecipes =
-    categoriesData.find((category) => category.category_id === selectedCategory)
-      ?.recipes || [];
+  const selectedRecipes = Array.isArray(categories)
+    ? categories.find((category) => category.category_id === selectedCategory)
+        ?.recipes || []
+    : [];
 
   return (
-    <div className={styles.homeContainer}>
-      <div className={styles.categoryWrapper}>
-        <Slider
-          {...categorySettings}
-          ref={categorySliderRef}
-          className={styles.categoryCarousel}
-        >
-          {categoriesData.map((category, index) => (
-            <div
-              key={category.category_id}
-              className={styles.categoryItemWrapper}
-              onClick={() => handleCategoryClick(category.category_id, index)}
-            >
-              <span
-                className={`${styles.categoryItem} ${
-                  category.category_id === selectedCategory ? styles.active : ""
-                }`}
-              >
-                {category.category_name}
-              </span>
-            </div>
-          ))}
-        </Slider>
-      </div>
-
-      <div className={styles.carouselWrapper}>
-        <LeftOutlined
-          className={styles.arrow}
-          onClick={() => sliderRef.current?.slickPrev()}
+    <>
+      {/* Banner Section - Outside homeContainer */}
+      <div className={styles.bannerWrapper}>
+        <img
+          src={bannerImage}
+          alt="Dishare Banner"
+          className={styles.bannerImage}
         />
-        <Slider {...recipeSettings} ref={sliderRef} className={styles.carousel}>
-          {selectedRecipes.map((recipe) => (
-            <div key={recipe.recipe_id}>
-              <Card
-                hoverable
-                cover={<img alt={recipe.recipe_name} src={recipe.images[0]} />}
-                className={styles.recipeCard}
-              >
-                <Card.Meta
-                  title={recipe.recipe_name}
-                  description={recipe.description || ""}
-                />
-              </Card>
-            </div>
-          ))}
-        </Slider>
-        <RightOutlined
-          className={styles.arrow}
-          onClick={() => sliderRef.current?.slickNext()}
-        />
-      </div>
-
-      <div className={styles.featuredCollection}>
-        <div className={styles.featuredImage}>
-          <img src="/images/recipes/macandcheese.jpg" alt="Mac and Cheese" />
-        </div>
-        <div className={styles.featuredText}>
-          <p className={styles.featuredLabel}>Collection</p>
-          <h2 className={styles.featuredTitle}>32 Best Mac & Cheese Recipes</h2>
-          <p className={styles.featuredDescription}>
-            Cheesy and oh so satisfying, mac and cheese can do no wrong.
-            Transport yourself back to childhood with one of these classic or
-            kicked-up options.
+        <div className={styles.bannerOverlay}>
+          <h1 className={styles.bannerTitle}> Wellcome to Dishare</h1>
+          <p className={styles.bannerSubtitle}>
+            Discover and Share Your Favorite Recipes
           </p>
         </div>
       </div>
 
-      <div className={styles.topUsersSection}>
-        <h2 className={styles.sectionTitle}>Top Users</h2>
-        <div className={styles.topUsersGrid}>
-          {topUsers.map((user) => (
-            <Card key={user.user_id} hoverable className={styles.userCard}>
-              <div className={styles.userCardContent}>
-                <Avatar
-                  size={64}
-                  src={user.avatar}
-                  icon={<UserOutlined />}
-                  className={styles.userAvatar}
+      {/* Main content inside homeContainer */}
+      <div className={styles.homeContainer}>
+        {loading ? (
+          <div className={styles.loading}>
+            <Spin size="large" />
+          </div>
+        ) : error ? (
+          <div className={styles.error}>
+            <p>{error}</p>
+          </div>
+        ) : (
+          <>
+            <div className={styles.categoryWrapper}>
+              <Slider
+                {...categorySettings}
+                ref={categorySliderRef}
+                className={styles.categoryCarousel}
+              >
+                {categories.map((category, index) => (
+                  <div
+                    key={category.category_id}
+                    className={styles.categoryItemWrapper}
+                    onClick={() =>
+                      handleCategoryClick(category.category_id, index)
+                    }
+                  >
+                    <span
+                      className={`${styles.categoryItem} ${
+                        category.category_id === selectedCategory
+                          ? styles.active
+                          : ""
+                      }`}
+                    >
+                      {category.category_name}
+                    </span>
+                  </div>
+                ))}
+              </Slider>
+            </div>
+
+            <div className={styles.carouselWrapper}>
+              <LeftOutlined
+                className={styles.arrow}
+                onClick={() => sliderRef.current?.slickPrev()}
+              />
+              <Slider
+                {...recipeSettings}
+                ref={sliderRef}
+                className={styles.carousel}
+              >
+                {selectedRecipes.map((recipe) => (
+                  <div key={recipe.recipe_id}>
+                    <Card
+                      hoverable
+                      cover={
+                        <img
+                          alt={recipe.recipe_name}
+                          src={
+                            recipe.images[0] ||
+                            "/images/recipes/placeholder.jpg"
+                          }
+                        />
+                      }
+                      className={styles.recipeCard}
+                    >
+                      <Card.Meta
+                        title={recipe.recipe_name}
+                        description={recipe.description || ""}
+                      />
+                    </Card>
+                  </div>
+                ))}
+              </Slider>
+              <RightOutlined
+                className={styles.arrow}
+                onClick={() => sliderRef.current?.slickNext()}
+              />
+            </div>
+          </>
+        )}
+        <br></br>
+        <h2 className={styles.sectionTitle}>Top Collection</h2>
+        <div className={styles.featuredCollection}>
+          <div className={styles.featuredImage}>
+            <img src="/images/recipes/macandcheese.jpg" alt="Mac and Cheese" />
+          </div>
+          <div className={styles.featuredText}>
+            <p className={styles.featuredLabel}>Collection</p>
+            <h2 className={styles.featuredTitle}>
+              32 Best Mac & Cheese Recipes
+            </h2>
+            <p className={styles.featuredDescription}>
+              Cheesy and oh so satisfying, mac and cheese can do no wrong.
+              Transport yourself back to childhood with one of these classic or
+              kicked-up options.
+            </p>
+          </div>
+        </div>
+
+        {/* Trending Recipes Section */}
+        <div className={styles.trendingRecipesSection}>
+          <h2
+            className={`${styles.sectionTitle} ${styles.centeredSectionTitle}`}
+          >
+            Trending Recipes
+          </h2>
+          <div className={styles.trendingRecipesGrid}>
+            {trendingRecipes.map((recipe) => (
+              <Card
+                key={recipe.id}
+                hoverable
+                cover={
+                  <div className={styles.recipeImageContainer}>
+                    <img alt={recipe.title} src={recipe.image} />
+                  </div>
+                }
+                className={styles.trendingRecipeCard}
+              >
+                <Card.Meta
+                  title={recipe.title}
+                  description={recipe.description || ""}
                 />
-                <div className={styles.userInfo}>
-                  <h3 className={styles.username}>{user.username}</h3>
-                  <p className={styles.userBio}>{user.bio}</p>
-                  <p className={styles.recipesCount}>
-                    {user.recipesCount} Recipes
-                  </p>
+              </Card>
+            ))}
+          </div>
+        </div>
+        <br></br>
+        <h2 className={`${styles.sectionTitle} ${styles.centeredSectionTitle}`}>
+          Top Users
+        </h2>
+        <div className={styles.topUsersSection}>
+          <div className={styles.topUsersGrid}>
+            {topUsers.map((user) => (
+              <Card key={user.user_id} hoverable className={styles.userCard}>
+                <div className={styles.userCardContent}>
+                  <Avatar
+                    size={64}
+                    src={user.avatar}
+                    icon={<UserOutlined />}
+                    className={styles.userAvatar}
+                  />
+                  <div className={styles.userInfo}>
+                    <h3 className={styles.username}>{user.username}</h3>
+                    <p className={styles.userBio}>{user.bio}</p>
+                    <p className={styles.recipesCount}>
+                      {user.recipesCount} Recipes
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

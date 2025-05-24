@@ -1,6 +1,7 @@
 import React from "react";
 import { Layout, Menu, Input } from "antd";
 import { Link } from "react-router-dom";
+import logo from "../../assets/image/logo.svg";
 import {
   HomeOutlined,
   UserOutlined,
@@ -20,7 +21,9 @@ const CustomHeader = () => {
   return (
     <Header className={styles.header}>
       <div className={styles.logo}>
-        <Link to="/">allrecipes</Link>
+        <Link to="/">
+          <img src={logo} alt="Logo" className={styles.logoImage} />
+        </Link>
       </div>
 
       <Menu theme="dark" mode="horizontal" className={styles.menu}>
