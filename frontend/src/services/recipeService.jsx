@@ -1,13 +1,18 @@
 import api from './api';
+import api from "./api";
 
 class RecipeService {
   // Fetch all recipes with pagination
   async getRecipes(params = {}) {
     try {
       const response = await api.get('/recipes', { params });
+      const response = await api.get("/recipes", { params });
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to fetch recipes');
+      throw new Error(
+        error.response?.data?.message || "Failed to fetch recipes"
+      );
     }
   }
 
@@ -18,6 +23,9 @@ class RecipeService {
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to fetch recipe');
+      throw new Error(
+        error.response?.data?.message || "Failed to fetch recipe"
+      );
     }
   }
 
@@ -28,6 +36,9 @@ class RecipeService {
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to fetch recipes by user');
+      throw new Error(
+        error.response?.data?.message || "Failed to fetch recipes by user"
+      );
     }
   }
 
@@ -35,55 +46,88 @@ class RecipeService {
   async filterRecipes({ categoryIds, ingredientIds, page, limit } = {}) {
     try {
       const params = {};
+      const params = new URLSearchParams();
 
+      // Append each category ID as a separate categoryIds parameter
       if (categoryIds && Array.isArray(categoryIds) && categoryIds.length > 0) {
         params.categoryIds = categoryIds;
+        categoryIds.forEach((id) => {
+          params.append("categoryIds", id);
+        });
       }
 
       if (ingredientIds && Array.isArray(ingredientIds) && ingredientIds.length > 0) {
-        params.ingredientIds = ingredientIds;
+      // Append each ingredient ID as a separate ingredientIds parameter
+      if (
+        ingredientIds &&
+        Array.isArray(ingredientIds) &&
+        ingredientIds.length > 0
+      ) {
+        ingredientIds.forEach((id) => {
+          params.append("ingredientIds", id);
+        });
       }
 
+      // Append pagination parameters
       if (page !== undefined) {
         params.page = page;
+        params.append("page", page);
       }
       if (limit !== undefined) {
         params.limit = limit;
+        params.append("limit", limit);
       }
 
       const response = await api.get('/recipes/filter', { params });
+      const response = await api.get("/recipes/filter", { params });
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to filter recipes');
+      throw new Error(
+        error.response?.data?.message || "Failed to filter recipes"
+      );
     }
   }
 
   async getTopContributors() {
     try {
       const response = await api.get('/recipes/users/top-contributors');
+      const response = await api.get("/recipes/users/top-contributors");
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to fetch top contributors');
+      throw new Error(
+        error.response?.data?.message || "Failed to fetch top contributors"
+      );
     }
   }
 
   async getMostFavoritedRecipes(limit = 5) {
     try {
       const response = await api.get('/recipes/most-favorited');
+      const response = await api.get("/recipes/most-favorited");
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to fetch most favorited recipes');
+      throw new Error(
+        error.response?.data?.message ||
+          "Failed to fetch most favorited recipes"
+      );
     }
   }
 
   async searchRecipesByName(name, params = {}) {
     try {
       const response = await api.get('/recipes/search', {
+      const response = await api.get("/recipes/search", {
         params: { name, ...params },
       });
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to search recipes');
+      throw new Error(
+        error.response?.data?.message || "Failed to search recipes"
+      );
     }
   }
 
@@ -92,26 +136,34 @@ class RecipeService {
     try {
       const formData = new FormData();
       formData.append('dto', JSON.stringify(dto));
+      formData.append("dto", JSON.stringify(dto));
 
       if (files.images && files.images.length > 0) {
         files.images.forEach((file) => {
           formData.append('files', file);
+          formData.append("files", file);
         });
       }
       if (files.videos && files.videos.length > 0) {
         files.videos.forEach((file) => {
           formData.append('files', file);
+          formData.append("files", file);
         });
       }
 
       const response = await api.post('/recipes', formData, {
+      const response = await api.post("/recipes", formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
         },
       });
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to create recipe');
+      throw new Error(
+        error.response?.data?.message || "Failed to create recipe"
+      );
     }
   }
 
@@ -120,26 +172,33 @@ class RecipeService {
     try {
       const formData = new FormData();
       formData.append('dto', JSON.stringify(dto));
+      formData.append("dto", JSON.stringify(dto));
 
       if (files.images && files.images.length > 0) {
         files.images.forEach((file) => {
           formData.append('files', file);
+          formData.append("files", file);
         });
       }
       if (files.videos && files.videos.length > 0) {
         files.videos.forEach((file) => {
           formData.append('files', file);
+          formData.append("files", file);
         });
       }
 
       const response = await api.put(`/recipes/${id}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
         },
       });
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to update recipe');
+      throw new Error(
+        error.response?.data?.message || "Failed to update recipe"
+      );
     }
   }
 
@@ -150,8 +209,11 @@ class RecipeService {
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to delete recipe');
+      throw new Error(
+        error.response?.data?.message || "Failed to delete recipe"
+      );
     }
   }
 }
 
-export const recipeService = new RecipeService();
+export const recipeService = new RecipeService();export const recipeService = new RecipeService();
