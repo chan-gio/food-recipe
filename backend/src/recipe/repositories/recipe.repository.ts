@@ -42,7 +42,7 @@ export class RecipeRepository implements IRecipeRepository {
         where: { user: { user_id: userId } },
         skip,
         take: limit,
-        relations: ['user', 'ingredients', 'categories', 'instructions', 'reviews', 'favorites', 'searches'],
+        relations: ['user'],
       });
       this.logger.log(`Fetched ${data.length} recipes (page ${page}, limit ${limit})`);
       return { data, total };

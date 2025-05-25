@@ -74,6 +74,17 @@ const Footer = () => {
         </div>
         <div className={styles.divider}></div>
 
+        <div className={styles.subscribeSection}>
+          <div className={styles.subscribeText}>
+            <h2>Never miss a recipe!</h2>
+            <p>Subscribe to my newsletter and receive 3 FREE ebooks!</p>
+          </div>
+          <button className={styles.subscribeButton}>
+            SUBSCRIBE <span>➔</span>
+          </button>
+        </div>
+        <div className={styles.divider}></div>
+
         <div className={styles.footerLinks}>
           <div className={styles.linkColumn}>
             <h4>RECIPES</h4>

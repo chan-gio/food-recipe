@@ -114,7 +114,7 @@ export class RecipeController {
 
   @Get('most-favorited')
   async getMostFavoritedRecipes(): Promise<Response<Recipe[]>> {
-    const data = await this.recipeService.getMostFavoritedRecipes(5);
+    const data = await this.recipeService.getMostFavoritedRecipes(6);
     return {
       data,
       message: 'Most favorited recipes retrieved successfully',

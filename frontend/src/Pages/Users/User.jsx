@@ -1,245 +1,174 @@
-import React from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import styles from "./User.module.scss";
-import { Avatar, Button, Tabs, Card, Rate } from "antd";
-import { UserOutlined, HeartOutlined, EditOutlined } from "@ant-design/icons";
+import { Avatar, Tabs, Rate, Spin, Alert } from "antd";
+import { UserOutlined } from "@ant-design/icons";
+import { userService } from "../../services/userService.jsx";
+import { recipeService } from "../../services/recipeService.jsx";
+import { useEffect, useState } from "react";
+import { reviewService } from "../../services/reviewService.jsx";
 
-const { TabPane } = Tabs;
+// Helper function to calculate time difference
+const getTimeAgo = (createdAt) => {
+  const now = new Date("2025-05-25T00:01:00+07:00"); // Current date and time
+  const reviewDate = new Date(createdAt);
+  const diffInMs = now - reviewDate; // Difference in milliseconds
+  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60)); // Difference in hours
+
+  if (diffInHours < 1) {
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    return diffInMinutes <= 1 ? "just now" : `${diffInMinutes} minutes ago`;
+  }
+  if (diffInHours < 24) {
+    return diffInHours === 1 ? "1 hour ago" : `${diffInHours} hours ago`;
+  }
+  const diffInDays = Math.floor(diffInHours / 24);
+  return diffInDays === 1 ? "1 day ago" : `${diffInDays} days ago`;
+};
 
 const User = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [recipes, setRecipes] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const userResponse = await userService.getUserById(id);
+        setUser(userResponse.data);
+
+        const recipesResponse = await recipeService.getRecipesByUserId(id, { page: 1, limit: 10 });
+        setRecipes(recipesResponse.data);
+
+        const reviewsResponse = await reviewService.getReviewsByUserId(id, { page: 1, limit: 10 });
+        setReviews(reviewsResponse.data);
+      } catch (err) {
+        setError(err.message || "Failed to fetch data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [id]);
+
+  const handleRecipeClick = (recipeId) => {
+    navigate(`/detail/${recipeId}`);
+  };
+
+  if (loading) {
+    return (
+      <div className={styles.loadingContainer}>
+        <Spin size="large" data-testid="loading-spinner" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.errorContainer}>
+        <Alert message="Error" description={error} type="error" showIcon />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <div className={styles.container}>User not found</div>;
+  }
+
+  const tabItems = [
+    {
+      key: "1",
+      label: `Recipes (${recipes.length})`,
+      children: (
+        <div className={styles.recipeList}>
+          {recipes.length > 0 ? (
+            recipes.map((recipe) => (
+              <div
+                key={recipe.recipe_id}
+                className={styles.recipeItem}
+                onClick={() => handleRecipeClick(recipe.recipe_id)}
+              >
+                <img
+                  src={recipe.images[0] || "https://via.placeholder.com/300x200"}
+                  alt={recipe.recipe_name}
+                  className={styles.recipeImage}
+                />
+                <div className={styles.recipeContent}>
+                  <h3 className={styles.recipeTitle}>{recipe.recipe_name}</h3>
+                  <div className={styles.recipeMeta}>
+                    <Rate
+                      disabled
+                      defaultValue={recipe.averageRating || 0}
+                      className={styles.recipeRating}
+                    />
+                    <span className={styles.reviewCount}>
+                      ({recipe.reviews?.length || 0})
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p>No recipes found for this user.</p>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "2",
+      label: `Reviews (${reviews.length})`,
+      children: (
+        <div className={styles.reviewList}>
+          {reviews.length > 0 ? (
+            reviews.map((review) => (
+              <div key={review.review_id} className={styles.review}>
+                <h3 className={styles.reviewRecipe}>{review.recipe_name}</h3>
+                <div className={styles.reviewMeta}>
+                  <Rate
+                    disabled
+                    defaultValue={review.rating || 0}
+                    className={styles.reviewRating}
+                  />
+                  <span className={styles.reviewTime}>
+                    {getTimeAgo(review.created_at)}
+                  </span>
+                </div>
+                <p className={styles.reviewContent}>{review.content || "No content provided."}</p>
+              </div>
+            ))
+          ) : (
+            <p>No reviews found for this user.</p>
+          )}
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <Avatar size={100} icon={<UserOutlined />} className={styles.avatar} />
+        <Avatar
+          size={100}
+          src={user.profile_picture}
+          icon={<UserOutlined />}
+          className={styles.avatar}
+        />
         <div className={styles.userInfo}>
-          <h1 className={styles.username}>PaulaG</h1>
+          <h1 className={styles.username}>{user.full_name || user.signin_account || "User"}</h1>
           <p className={styles.bio}>
-            I love to cook and bake. I have been cooking since I was a young
-            girl, learning from my mom and grandma.
+            {user.bio || "This user hasn't added a bio yet."}
           </p>
         </div>
       </div>
 
-      <Tabs defaultActiveKey="1" className={styles.tabs}>
-        <TabPane tab="Recipes (15)" key="1">
-          <div className={styles.recipeList}>
-            <Card
-              hoverable
-              cover={
-                <img
-                  alt="Bagel French Toast Casserole"
-                  src="https://via.placeholder.com/300x200"
-                />
-              }
-              className={styles.recipeCard}
-            >
-              <Card.Meta
-                title="Bagel French Toast Casserole"
-                description={
-                  <div className={styles.recipeMeta}>
-                    <Rate
-                      disabled
-                      defaultValue={5}
-                      className={styles.recipeRating}
-                    />
-                    <span className={styles.reviewCount}>(3)</span>
-                  </div>
-                }
-              />
-            </Card>
-            <Card
-              hoverable
-              cover={
-                <img
-                  alt="Blueberry Muffins"
-                  src="https://via.placeholder.com/300x200"
-                />
-              }
-              className={styles.recipeCard}
-            >
-              <Card.Meta
-                title="Blueberry Muffins"
-                description={
-                  <div className={styles.recipeMeta}>
-                    <Rate
-                      disabled
-                      defaultValue={4}
-                      className={styles.recipeRating}
-                    />
-                    <span className={styles.reviewCount}>(5)</span>
-                  </div>
-                }
-              />
-            </Card>
-            <Card
-              hoverable
-              cover={
-                <img alt="Pancakes" src="https://via.placeholder.com/300x200" />
-              }
-              className={styles.recipeCard}
-            >
-              <Card.Meta
-                title="Pancakes"
-                description={
-                  <div className={styles.recipeMeta}>
-                    <Rate
-                      disabled
-                      defaultValue={4}
-                      className={styles.recipeRating}
-                    />
-                    <span className={styles.reviewCount}>(2)</span>
-                  </div>
-                }
-              />
-            </Card>
-            <Card
-              hoverable
-              cover={
-                <img
-                  alt="Chocolate Chip Cookies"
-                  src="https://via.placeholder.com/300x200"
-                />
-              }
-              className={styles.recipeCard}
-            >
-              <Card.Meta
-                title="Chocolate Chip Cookies"
-                description={
-                  <div className={styles.recipeMeta}>
-                    <Rate
-                      disabled
-                      defaultValue={5}
-                      className={styles.recipeRating}
-                    />
-                    <span className={styles.reviewCount}>(7)</span>
-                  </div>
-                }
-              />
-            </Card>
-            <Card
-              hoverable
-              cover={
-                <img
-                  alt="Banana Bread"
-                  src="https://via.placeholder.com/300x200"
-                />
-              }
-              className={styles.recipeCard}
-            >
-              <Card.Meta
-                title="Banana Bread"
-                description={
-                  <div className={styles.recipeMeta}>
-                    <Rate
-                      disabled
-                      defaultValue={4}
-                      className={styles.recipeRating}
-                    />
-                    <span className={styles.reviewCount}>(4)</span>
-                  </div>
-                }
-              />
-            </Card>
-            <Card
-              hoverable
-              cover={
-                <img
-                  alt="Lemon Bars"
-                  src="https://via.placeholder.com/300x200"
-                />
-              }
-              className={styles.recipeCard}
-            >
-              <Card.Meta
-                title="Lemon Bars"
-                description={
-                  <div className={styles.recipeMeta}>
-                    <Rate
-                      disabled
-                      defaultValue={3}
-                      className={styles.recipeRating}
-                    />
-                    <span className={styles.reviewCount}>(2)</span>
-                  </div>
-                }
-              />
-            </Card>
-            <Card
-              hoverable
-              cover={
-                <img
-                  alt="Apple Pie"
-                  src="https://via.placeholder.com/300x200"
-                />
-              }
-              className={styles.recipeCard}
-            >
-              <Card.Meta
-                title="Apple Pie"
-                description={
-                  <div className={styles.recipeMeta}>
-                    <Rate
-                      disabled
-                      defaultValue={5}
-                      className={styles.recipeRating}
-                    />
-                    <span className={styles.reviewCount}>(6)</span>
-                  </div>
-                }
-              />
-            </Card>
-            <Card
-              hoverable
-              cover={
-                <img
-                  alt="Carrot Cake"
-                  src="https://via.placeholder.com/300x200"
-                />
-              }
-              className={styles.recipeCard}
-            >
-              <Card.Meta
-                title="Carrot Cake"
-                description={
-                  <div className={styles.recipeMeta}>
-                    <Rate
-                      disabled
-                      defaultValue={4}
-                      className={styles.recipeRating}
-                    />
-                    <span className={styles.reviewCount}>(3)</span>
-                  </div>
-                }
-              />
-            </Card>
-          </div>
-        </TabPane>
-        <TabPane tab="Reviews (5)" key="2">
-          <div className={styles.reviewList}>
-            <div className={styles.review}>
-              <h3 className={styles.reviewRecipe}>
-                Bagel French Toast Casserole
-              </h3>
-              <Rate disabled defaultValue={5} className={styles.reviewRating} />
-              <p className={styles.reviewContent}>
-                OMG! This was amazing!! I even fudged things up a bit when I put
-                the dish in the oven uncovered for the first half, so I tried to
-                "fix" it by adding bit more milk, beaten with an egg in the top,
-                and then sprinkled cinnamon sugar and covering for the final 30
-                minutes. Came out absolutely delicious with the most amazing
-                texture! Will definitely make again.
-              </p>
-            </div>
-            <div className={styles.review}>
-              <h3 className={styles.reviewRecipe}>Blueberry Muffins</h3>
-              <Rate disabled defaultValue={4} className={styles.reviewRating} />
-              <p className={styles.reviewContent}>
-                Really tasty muffins! I added a bit more sugar to suit my taste,
-                but the texture was perfect. Thanks for sharing!
-              </p>
-            </div>
-          </div>
-        </TabPane>
-      </Tabs>
+      <Tabs defaultActiveKey="1" className={styles.tabs} items={tabItems} />
     </div>
   );
 };

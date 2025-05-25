@@ -49,7 +49,6 @@ class RecipeService {
         });
       }
 
-      // Append each ingredient ID as a separate ingredientIds parameter
       if (
         ingredientIds &&
         Array.isArray(ingredientIds) &&
@@ -88,7 +87,7 @@ class RecipeService {
     }
   }
 
-  async getMostFavoritedRecipes(limit = 5) {
+  async getMostFavoritedRecipes(limit = 6) {
     try {
       const response = await api.get("/recipes/most-favorited");
       return response.data;

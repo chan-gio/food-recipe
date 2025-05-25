@@ -1,6 +1,6 @@
-import React from "react";
-import CustomHeader from "../Header/Header"; // Import header từ component Header
-import CustomFooter from "../Footer/Footer";
+import React from 'react';
+import CustomHeader from '../Header/Header'; // Import header từ component Header
+import CustomFooter from '../Footer/Footer'; 
 const Layout = ({ children }) => {
   return (
     <div>

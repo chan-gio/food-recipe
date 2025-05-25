@@ -24,7 +24,7 @@ const Routes = [
   { path: "/detail/:id", component: <DetailRecipe /> },
   { path: "/recipeform", component: <RecipeForm /> },
   { path: "/recipeform/:id", component: <RecipeForm /> },
-  { path: "/user", component: <Users /> },
+  { path: "/user/:id", component: <Users /> },
   { path: "/allrecipes", component: <AllRecipes /> },
   {
     path: "/admin",
