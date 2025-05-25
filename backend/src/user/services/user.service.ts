@@ -75,11 +75,10 @@ export class UserService implements IUserService {
   }
 
   async searchByFullNameAndEmail(
-    full_name: string,
-    email: string,
+    query: string,
     paginationDto: PaginationDto,
   ): Promise<{ data: User[]; total: number }> {
-    return this.userRepository.searchByFullNameAndEmail(full_name, email, paginationDto);
+    return this.userRepository.searchByFullNameAndEmail(query, paginationDto);
   }
 
   async update(id: number, dto: UpdateUserDto, file?: Express.Multer.File): Promise<User> {

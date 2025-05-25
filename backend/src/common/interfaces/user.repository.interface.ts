@@ -8,8 +8,7 @@ export interface IUserRepository {
   findByEmail(email: string): Promise<User | null>;
   create(user: Partial<User>): Promise<User>;
   searchByFullNameAndEmail(
-    full_name: string,
-    email: string,
+    query: string,
     paginationDto: PaginationDto,
   ): Promise<{ data: User[]; total: number }>;
   // update(id: number, user: Partial<User>): Promise<User>;

@@ -5,7 +5,6 @@ import { Response } from '../../common/types/response.type';
 import { Category } from '../entities/category.entity';
 import { CreateCategoryDto } from '../dtos/create-category.dto';
 import { UpdateCategoryDto } from '../dtos/update-category.dto';
-import { UploadMediaDto } from '../dtos/upload-media.dto';
 import { PaginationDto } from 'src/common/dots/pagination.dto';
 
 @Controller('categories')
@@ -63,11 +62,4 @@ export class CategoryController {
     return { data: null, message: 'Category deleted successfully', code: 200 };
   }
 
-  @Post('upload')
-  @UseInterceptors(FileInterceptor('file'))
-  @UsePipes(new ValidationPipe({ whitelist: true }))
-  async uploadMedia(@UploadedFile() file: Express.Multer.File, @Body() dto: UploadMediaDto): Promise<Response<string>> {
-    const data = await this.categoryService.uploadMedia(file, dto);
-    return { data, message: 'Media uploaded successfully', code: 200 };
-  }
 }

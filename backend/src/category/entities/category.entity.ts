@@ -9,9 +9,6 @@ export class Category {
   @Column({ unique: true })
   category_name: string;
 
-  @Column({ type: 'json', nullable: true })
-  images: string[];
-
   @ManyToMany(() => Recipe, (recipe) => recipe.categories)
   recipes: Recipe[];
 }

@@ -5,7 +5,6 @@ import { ICategoryService } from '../../common/interfaces/category.service.inter
 import { Category } from '../entities/category.entity';
 import { CreateCategoryDto } from '../dtos/create-category.dto';
 import { UpdateCategoryDto } from '../dtos/update-category.dto';
-import { UploadMediaDto, MediaType } from '../dtos/upload-media.dto';
 import { EntityNotFoundException } from '../../common/exceptions/not-found.exception';
 import { PaginationDto } from 'src/common/dots/pagination.dto';
 
@@ -46,34 +45,4 @@ export class CategoryService implements ICategoryService {
     await this.categoryRepository.delete(id);
   }
 
-  async uploadMedia(file: Express.Multer.File, dto: UploadMediaDto): Promise<string> {
-    const { type, categoryId } = dto;
-
-    // Upload file to Cloudinary
-    const uploadResult: UploadApiResponse = await new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        {
-          resource_type: type === MediaType.IMAGE ? 'image' : 'auto',
-          folder: `categories/${categoryId || 'temp'}`,
-          chunk_size: 6000000,
-        },
-        (error, result) => {
-          if (error) reject(error);
-          else resolve(result as UploadApiResponse);
-        },
-      );
-      require('fs').createReadStream(file.path).pipe(uploadStream);
-    });
-
-    const mediaUrl = uploadResult.secure_url;
-
-    // If categoryId is provided, update the category
-    if (categoryId) {
-      const category = await this.getCategoryById(categoryId);
-      category.images = [...(category.images || []), mediaUrl];
-      await this.categoryRepository.update(categoryId, category);
-    }
-
-    return mediaUrl;
-  }
 }

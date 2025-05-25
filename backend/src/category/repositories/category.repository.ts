@@ -23,14 +23,21 @@ export class CategoryRepository implements ICategoryRepository {
         take: limit,
         relations: ['recipes'],
       });
-      this.logger.log(`Fetched ${data.length} categories (page ${page}, limit ${limit})`);
-      return { data, total };
+  
+      // Thêm số lượng công thức (recipeCount) vào mỗi danh mục
+      const dataWithRecipeCount = data.map(category => ({
+        ...category,
+        recipeCount: category.recipes ? category.recipes.length : 0, // Tính số lượng công thức
+      }));
+  
+      this.logger.log(`Fetched ${dataWithRecipeCount.length} categories (page ${page}, limit ${limit})`);
+      return { data: dataWithRecipeCount, total };
     } catch (error) {
       this.logger.error(`Failed to fetch all categories: ${error.message}`, error.stack);
       throw error;
     }
   }
-
+  
   async findById(id: number): Promise<Category | null> {
     try {
       return await this.categoryRepo.findOne({ where: { category_id: id }, relations: ['recipes'] });

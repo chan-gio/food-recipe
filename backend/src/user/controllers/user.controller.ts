@@ -33,13 +33,11 @@ export class UserController {
   @Get('search')
   @UsePipes(new ValidationPipe({ whitelist: true }))
   async searchByFullNameAndEmail(
-    @Query('full_name') full_name: string,
-    @Query('email') email: string,
+    @Query('query') query: string,
     @Query() paginationDto: PaginationDto,
   ): Promise<Response<User[]>> {
     const { data, total } = await this.userService.searchByFullNameAndEmail(
-      full_name,
-      email,
+      query,
       paginationDto,
     );
     return {

@@ -9,8 +9,7 @@ export interface IUserService {
   create(user: Partial<User>): Promise<User>;
   update(id: number, user: Partial<User>): Promise<User>;
   searchByFullNameAndEmail(
-    full_name: string,
-    email: string,
+    query: string,
     paginationDto: PaginationDto,
   ): Promise<{ data: User[]; total: number }>;
   delete(id: number): Promise<void>;

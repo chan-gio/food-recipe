@@ -62,8 +62,7 @@ export class UserRepository implements IUserRepository {
   }
 
   async searchByFullNameAndEmail(
-    full_name: string,
-    email: string,
+    query: string,
     paginationDto: PaginationDto,
   ): Promise<{ data: User[]; total: number }> {
     try {
@@ -72,21 +71,21 @@ export class UserRepository implements IUserRepository {
 
       const queryBuilder = this.userRepo.createQueryBuilder('user');
 
-      if (full_name) {
-        queryBuilder.andWhere('LOWER(user.full_name) LIKE LOWER(:full_name)', { full_name: `%${full_name}%` });
-      }
-      if (email) {
-        queryBuilder.andWhere('LOWER(user.email) LIKE LOWER(:email)', { email: `%${email}%` });
+      if (query) {
+        queryBuilder.where(
+          'LOWER(user.full_name) LIKE LOWER(:query) OR LOWER(user.email) LIKE LOWER(:query)',
+          { query: `%${query}%` },
+        );
       }
 
       queryBuilder.skip(skip).take(limit);
 
       const [data, total] = await queryBuilder.getManyAndCount();
 
-      this.logger.log(`Fetched ${data.length} users for search (full_name: ${full_name || 'N/A'}, email: ${email || 'N/A'}, page: ${page}, limit: ${limit})`);
+      this.logger.log(`Fetched ${data.length} users for search (query: ${query || 'N/A'}, page: ${page}, limit: ${limit})`);
       return { data, total };
     } catch (error) {
-      this.logger.error(`Failed to search users (full_name: ${full_name || 'N/A'}, email: ${email || 'N/A'}): ${error.message}`, error.stack);
+      this.logger.error(`Failed to search users (query: ${query || 'N/A'}): ${error.message}`, error.stack);
       throw error;
     }
   }
