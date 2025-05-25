@@ -1,6 +1,6 @@
 import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { Review } from '../entities/review.entity';
 import { Recipe } from '../../recipe/entities/recipe.entity';
 import { User } from '../../user/entities/user.entity';
@@ -19,6 +19,7 @@ export class ReviewRepository implements IReviewRepository {
     private readonly recipeRepo: Repository<Recipe>,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+    private readonly dataSource: DataSource,
   ) {}
 
   async findAll(paginationDto: PaginationDto): Promise<{ data: Review[]; total: number }> {
@@ -182,7 +183,7 @@ export class ReviewRepository implements IReviewRepository {
         if (!parentReview) {
           throw new NotFoundException(`Parent review with ID ${dto.parent_review_id} not found`);
         }
-        if (parentReview.recipe.recipe_id !== dto.recipe_id) { // Fixed: Changed review_id to recipe_id
+        if (parentReview.recipe.recipe_id !== dto.recipe_id) {
           throw new BadRequestException('Parent review must belong to the same recipe');
         }
         newReview.parent = parentReview;
@@ -212,36 +213,39 @@ export class ReviewRepository implements IReviewRepository {
   }
 
   async delete(id: number): Promise<void> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
-      const review = await this.reviewRepo.findOne({ where: { review_id: id } });
+      const review = await queryRunner.manager.findOne(Review, {
+        where: { review_id: id },
+        relations: ['replies'], // Load direct replies for verification
+      });
       if (!review) {
         throw new NotFoundException(`Review with ID ${id} not found`);
       }
 
-      const descendants = await this.fetchAllDescendants(id);
-      const idsToDelete = [id, ...descendants.map(descendant => descendant.review_id)];
-      if (idsToDelete.length > 0) {
-        await this.reviewRepo.delete(idsToDelete);
-      }
+      await this.deleteReviewRecursively(id, queryRunner);
 
-      this.logger.log(`Deleted review with ID ${id} and its descendants`);
+      await queryRunner.commitTransaction();
     } catch (error) {
-      this.logger.error(`Failed to delete review with ID ${id}: ${error.message}`, error.stack);
+      await queryRunner.rollbackTransaction();
       throw error;
+    } finally {
+      await queryRunner.release();
     }
   }
 
-  private async fetchAllDescendants(reviewId: number): Promise<Review[]> {
-    const reviews = await this.reviewRepo.find({
+  private async deleteReviewRecursively(reviewId: number, queryRunner: any): Promise<void> {
+    const childReviews = await queryRunner.manager.find(Review, {
       where: { parent: { review_id: reviewId } },
     });
 
-    let descendants: Review[] = [];
-    for (const review of reviews) {
-      const childDescendants = await this.fetchAllDescendants(review.review_id);
-      descendants = [...descendants, review, ...childDescendants];
+    for (const child of childReviews) {
+      await this.deleteReviewRecursively(child.review_id, queryRunner);
     }
 
-    return descendants;
+    await queryRunner.manager.delete(Review, reviewId);
   }
 }

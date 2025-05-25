@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Raw, Repository } from 'typeorm';
+import { Raw, Repository, DataSource } from 'typeorm';
 import { Recipe } from '../entities/recipe.entity';
 import { IRecipeRepository } from '../../common/interfaces/recipe.repository.interface';
 import { PaginationDto } from 'src/common/dots/pagination.dto';
@@ -14,6 +14,7 @@ export class RecipeRepository implements IRecipeRepository {
   constructor(
     @InjectRepository(Recipe)
     private readonly recipeRepo: Repository<Recipe>,
+    private readonly dataSource: DataSource,
   ) {}
 
   async findAll(paginationDto: PaginationDto): Promise<{ data: Recipe[]; total: number }> {
@@ -228,14 +229,80 @@ export class RecipeRepository implements IRecipeRepository {
   }
 
   async delete(id: number): Promise<void> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
-      const result = await this.recipeRepo.delete(id);
+      await this.deleteReviewsRecursively(id, queryRunner);
+      await queryRunner.manager.query(
+        `DELETE FROM Has WHERE recipe_id_for_ingredient = ?`,
+        [id],
+      );
+      await queryRunner.manager.query(
+        `DELETE FROM RecipeCategory WHERE recipe_id_for_category = ?`,
+        [id],
+      );
+      await queryRunner.manager.query(
+        `DELETE FROM Instruction WHERE recipe_id = ?`,
+        [id],
+      );
+      await queryRunner.manager.query(
+        `DELETE FROM Favorite WHERE recipe_id = ?`,
+        [id],
+      );
+      const result = await queryRunner.manager.delete(Recipe, id);
       if (result.affected === 0) {
         throw new Error(`Recipe with ID ${id} not found`);
       }
+      await queryRunner.commitTransaction();
     } catch (error) {
-      this.logger.error(`Failed to delete recipe with ID ${id}: ${error.message}`, error.stack);
+      await queryRunner.rollbackTransaction();
       throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  private async deleteReviewsRecursively(recipeId: number, queryRunner: any): Promise<void> {
+    const reviews = await queryRunner.manager.query(
+      `SELECT review_id FROM Review WHERE recipe_id = ?`,
+      [recipeId]
+    );
+
+    if (!reviews || reviews.length === 0) {
+      return;
+    }
+
+    for (const review of reviews) {
+      const reviewId = review.review_id;
+
+      await this.deleteChildReviews(reviewId, queryRunner);
+
+      await queryRunner.manager.query(
+        `DELETE FROM Review WHERE review_id = ?`,
+        [reviewId]
+      );
+    }
+  }
+
+  private async deleteChildReviews(reviewId: number, queryRunner: any): Promise<void> {
+    const childReviews = await queryRunner.manager.query(
+      `SELECT review_id FROM Review WHERE parent_review_id = ?`,
+      [reviewId]
+    );
+
+    if (!childReviews || childReviews.length === 0) {
+      return;
+    }
+
+    for (const childReview of childReviews) {
+      const childReviewId = childReview.review_id;
+      await this.deleteChildReviews(childReviewId, queryRunner); // Recursive call for nested children
+      await queryRunner.manager.query(
+        `DELETE FROM Review WHERE review_id = ?`,
+        [childReviewId]
+      );
     }
   }
 }
