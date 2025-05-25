@@ -103,9 +103,16 @@ const RecipeForm = () => {
           })));
 
           // Populate selected categories with IDs
-          setSelectedCategories(recipeData.categories.map(cat => ({
+          const initialCategories = recipeData.categories.map(cat => ({
             category_name: cat.category_name,
             category_id: cat.category_id,
+          }));
+          setSelectedCategories(initialCategories);
+          setFetchedCategories(initialCategories); // Add initial categories to fetchedCategories
+          setCategoryOptions(initialCategories.map(cat => ({
+            label: cat.category_name,
+            value: cat.category_name,
+            id: cat.category_id,
           })));
 
           // Set fileList for images and videos
@@ -137,8 +144,11 @@ const RecipeForm = () => {
   // Debounced function to fetch categories using categoryService
   const fetchCategories = debounce(async (value) => {
     if (!value || value.trim() === "") {
-      setCategoryOptions([]);
-      setFetchedCategories([]);
+      setCategoryOptions(fetchedCategories.map(cat => ({
+        label: cat.category_name,
+        value: cat.category_name,
+        id: cat.category_id,
+      })));
       return;
     }
 
@@ -148,18 +158,139 @@ const RecipeForm = () => {
         category_name: item.category_name,
         category_id: item.category_id,
       }));
-      setCategoryOptions(categories.map(cat => ({
+
+      // Merge fetched categories with existing ones, avoiding duplicates
+      const updatedFetchedCategories = Array.from(
+        new Map([...fetchedCategories, ...categories].map(cat => [cat.category_id, cat])).values()
+      );
+      setFetchedCategories(updatedFetchedCategories);
+      setCategoryOptions(updatedFetchedCategories.map(cat => ({
         label: cat.category_name,
         value: cat.category_name,
         id: cat.category_id,
       })));
-      setFetchedCategories(categories);
     } catch (err) {
       message.error(err.message);
-      setCategoryOptions([]);
-      setFetchedCategories([]);
+      setCategoryOptions(fetchedCategories.map(cat => ({
+        label: cat.category_name,
+        value: cat.category_name,
+        id: cat.category_id,
+      })));
     }
   }, 300);
+
+  // Function to create a new category if it doesn't exist
+  const createOrSelectCategory = async (categoryName) => {
+    if (!categoryName || categoryName.trim() === "") {
+      return null;
+    }
+
+    // Check if the category already exists in fetchedCategories
+    const existingCategory = fetchedCategories.find(cat => cat.category_name.toLowerCase() === categoryName.toLowerCase());
+    if (existingCategory) {
+      return {
+        category_name: existingCategory.category_name,
+        category_id: existingCategory.category_id,
+      };
+    }
+
+    // If not exists, create a new category
+    try {
+      const response = await categoryService.createCategory({ category_name: categoryName });
+      const newCategory = {
+        category_name: categoryName,
+        category_id: response.data.category_id, // Assuming the response includes the new category_id
+      };
+      // Update fetchedCategories and categoryOptions
+      setFetchedCategories(prev => {
+        const updated = [...prev, newCategory];
+        return Array.from(
+          new Map(updated.map(cat => [cat.category_id, cat])).values()
+        );
+      });
+      setCategoryOptions(prev => {
+        const updated = [...prev, {
+          label: categoryName,
+          value: categoryName,
+          id: newCategory.category_id,
+        }];
+        return Array.from(
+          new Map(updated.map(opt => [opt.value, opt])).values()
+        );
+      });
+      message.success(`Category "${categoryName}" created successfully.`);
+      return newCategory;
+    } catch (err) {
+      message.error(`Failed to create category "${categoryName}": ${err.message}`);
+      return null;
+    }
+  };
+
+  // Handle category selection and creation
+  const handleCategoryChange = async (value) => {
+    const newSelectedCategories = [];
+    const currentSelectedNames = selectedCategories.map(cat => cat.category_name.toLowerCase());
+
+    // Process each category in the current value
+    for (const category of value) {
+      // Skip if the category is already in selectedCategories
+      const existingCategory = selectedCategories.find(cat => cat.category_name.toLowerCase() === category.toLowerCase());
+      if (existingCategory) {
+        newSelectedCategories.push(existingCategory);
+        continue;
+      }
+
+      // If the category is new, create or select it
+      const selectedCategory = await createOrSelectCategory(category);
+      if (selectedCategory) {
+        newSelectedCategories.push(selectedCategory);
+      }
+    }
+
+    // Remove categories that are no longer in the value
+    const finalSelectedCategories = newSelectedCategories.filter(cat => 
+      value.some(val => val.toLowerCase() === cat.category_name.toLowerCase())
+    );
+
+    setSelectedCategories(finalSelectedCategories);
+    form.setFieldsValue({ categories: value });
+  };
+
+  // Handle blur event to create category if the last entered tag isn't selected
+  const handleCategoryBlur = async () => {
+    const currentValue = form.getFieldValue("categories") || [];
+    if (currentValue.length === 0) {
+      setSelectedCategories([]);
+      return;
+    }
+
+    const newSelectedCategories = [];
+    const currentSelectedNames = selectedCategories.map(cat => cat.category_name.toLowerCase());
+
+    // Process each category in the current value
+    for (const category of currentValue) {
+      // Skip if the category is already in selectedCategories
+      const existingCategory = selectedCategories.find(cat => cat.category_name.toLowerCase() === category.toLowerCase());
+      if (existingCategory) {
+        newSelectedCategories.push(existingCategory);
+        continue;
+      }
+
+      // If the category is new, create or select it
+      const selectedCategory = await createOrSelectCategory(category);
+      if (selectedCategory) {
+        newSelectedCategories.push(selectedCategory);
+      }
+    }
+
+    // Remove categories that are no longer in the value
+    const finalSelectedCategories = newSelectedCategories.filter(cat => 
+      currentValue.some(val => val.toLowerCase() === cat.category_name.toLowerCase())
+    );
+
+    setSelectedCategories(finalSelectedCategories);
+    form.setFieldsValue({ categories: currentValue });
+  };
 
   // Debounced function to fetch ingredients using ingredientService
   const fetchIngredients = debounce(async (value, index) => {
@@ -171,7 +302,6 @@ const RecipeForm = () => {
 
     try {
       const response = await ingredientService.getIngredientByName(value);
-      console.log("Search API response for value", value, ":", response.data);
 
       const ingredients = response.data.map(item => ({
         ingredient_name: item.ingredient_name,
@@ -191,7 +321,6 @@ const RecipeForm = () => {
 
       setIngredientOptions(newOptions);
       setFetchedIngredients(uniqueIngredients);
-      console.log(`Updated ingredientOptions for index ${index}:`, newOptions);
     } catch (err) {
       message.error(err.message);
       setIngredientOptions([]);
@@ -205,7 +334,6 @@ const RecipeForm = () => {
     const newInstructions = [...instructions, newInstruction];
     setInstructions(newInstructions);
     form.setFieldsValue({ instructions: newInstructions });
-    console.log("Added new instruction. Instructions:", newInstructions);
   };
 
   // Remove an instruction
@@ -213,7 +341,6 @@ const RecipeForm = () => {
     const newInstructions = instructions.filter((_, i) => i !== index);
     setInstructions(newInstructions);
     form.setFieldsValue({ instructions: newInstructions });
-    console.log("Removed instruction. Instructions:", newInstructions);
   };
 
   // Update an instruction field
@@ -236,15 +363,29 @@ const RecipeForm = () => {
     const newIngredients = [...ingredients, newIngredient];
     setIngredients(newIngredients);
     form.setFieldsValue({ ingredients: newIngredients });
-    console.log("Added new ingredient. Ingredients:", newIngredients);
   };
 
   // Remove an ingredient
-  const removeIngredient = (index) => {
-    const newIngredients = ingredients.filter((_, i) => i !== index);
-    setIngredients(newIngredients);
-    form.setFieldsValue({ ingredients: newIngredients });
-    console.log("Removed ingredient. Ingredients:", newIngredients);
+  const removeIngredient = async (index) => {
+    const ingredient = ingredients[index];
+    try {
+      // If the ingredient has an ingredient_id, delete it from the server
+      if (ingredient.ingredient_id) {
+        await ingredientService.deleteIngredient(ingredient.ingredient_id);
+        message.success(`Ingredient "${ingredient.ingredient_name}" deleted successfully.`);
+
+        // Remove the ingredient from fetchedIngredients and ingredientOptions
+        setFetchedIngredients(prev => prev.filter(ing => ing.ingredient_id !== ingredient.ingredient_id));
+        setIngredientOptions(prev => prev.filter(opt => opt.id !== ingredient.ingredient_id));
+      }
+
+      // Remove the ingredient from the local state
+      const newIngredients = ingredients.filter((_, i) => i !== index);
+      setIngredients(newIngredients);
+      form.setFieldsValue({ ingredients: newIngredients });
+    } catch (err) {
+      message.error(err.message);
+    }
   };
 
   // Update an ingredient field
@@ -252,7 +393,6 @@ const RecipeForm = () => {
     const newIngredients = [...ingredients];
     newIngredients[index] = { ...newIngredients[index], [field]: value };
     setIngredients(newIngredients);
-    console.log(`Updated ingredient at index ${index}:`, newIngredients[index]);
     // Update the form field for amount and unit, but not for ingredient_name or ingredient_type
     if (field !== "ingredient_name" && field !== "ingredient_type") {
       form.setFieldsValue({ ingredients: newIngredients });
@@ -305,7 +445,7 @@ const RecipeForm = () => {
       setIngredientOptions(prev => {
         const updated = [...prev, { value: value, label: value, id: newIngredient.ingredient_id }];
         return Array.from(
-          new Map(updated.map(opt => [opt.value.toLowerCase(), opt])).values()
+          new Map(updated.map(opt => [opt.value, opt])).values()
         );
       });
       // Update the ingredient state with the new ingredient's ID and name in a single state update
@@ -316,7 +456,6 @@ const RecipeForm = () => {
           ingredient_id: newIngredient.ingredient_id,
           ingredient_name: value,
         };
-        console.log(`Created new ingredient at index ${index}:`, newIngredients[index]);
         return newIngredients;
       });
       message.success(`Ingredient "${value}" created successfully.`);
@@ -351,9 +490,6 @@ const RecipeForm = () => {
     }
 
     try {
-      // Log the current ingredients state for debugging
-      console.log("Ingredients state before submission:", ingredients);
-
       // Validate ingredients only if there are any
       if (ingredients.length > 0) {
         for (let i = 0; i < ingredients.length; i++) {
@@ -387,7 +523,6 @@ const RecipeForm = () => {
         .map(ingredient => ({
           ingredient_id: ingredient.ingredient_id,
         }));
-      console.log("Processed ingredients:", processedIngredients);
 
       // Process categories: Format with only category_id
       const processedCategories = selectedCategories
@@ -395,7 +530,6 @@ const RecipeForm = () => {
         .map(cat => ({
           category_id: cat.category_id,
         }));
-      console.log("Processed categories:", processedCategories);
 
       // Process instructions: Filter out invalid entries
       const processedInstructions = instructions
@@ -404,19 +538,16 @@ const RecipeForm = () => {
           step_number: instruction.step_number,
           description: instruction.description,
         }));
-      console.log("Processed instructions:", processedInstructions);
 
       // Process images: Include existing image URLs (not being replaced) in recipeData
       const existingImages = fileList.images
         .filter(file => !file.originFileObj) // Only include images that are not new uploads (i.e., already have URLs)
         .map(file => file.url);
-      console.log("Existing images (URLs):", existingImages);
 
       // Process videos: Include existing video URLs (not being replaced) in recipeData
       const existingVideos = fileList.videos
         .filter(file => !file.originFileObj) // Only include videos that are not new uploads (i.e., already have URLs)
         .map(file => file.url);
-      console.log("Existing videos (URLs):", existingVideos);
 
       // Prepare the recipe data for the API
       const recipeData = {
@@ -434,9 +565,6 @@ const RecipeForm = () => {
         user_id: userId,
       };
 
-      // Log the payload for debugging
-      console.log("Submitting recipe data:", recipeData);
-
       // Prepare files for upload (new images and videos)
       const files = {
         images: fileList.images
@@ -446,7 +574,6 @@ const RecipeForm = () => {
           .filter(file => file.originFileObj) // Only include new uploads
           .map(file => file.originFileObj),
       };
-      console.log("Files for upload:", files);
 
       if (isEditMode) {
         await recipeService.updateRecipe(id, recipeData, files);
@@ -565,38 +692,8 @@ const RecipeForm = () => {
               placeholder="Select or type categories"
               className={styles.categorySelect}
               onSearch={fetchCategories}
-              onChange={(value) => {
-                // Create new categories when Enter is pressed
-                const newSelectedCategories = [];
-                value.forEach(async (category) => {
-                  const existingCategory = fetchedCategories.find(cat => cat.category_name === category);
-                  if (existingCategory) {
-                    newSelectedCategories.push({
-                      category_name: existingCategory.category_name,
-                      category_id: existingCategory.category_id,
-                    });
-                  } else {
-                    try {
-                      const response = await categoryService.createCategory({ category_name: category });
-                      const newCategory = {
-                        category_name: category,
-                        category_id: response.data.category_id, // Assuming the response includes the new category_id
-                      };
-                      setFetchedCategories(prev => [...prev, newCategory]);
-                      setCategoryOptions(prev => [...prev, {
-                        label: category,
-                        value: category,
-                        id: newCategory.category_id,
-                      }]);
-                      newSelectedCategories.push(newCategory);
-                    } catch (err) {
-                      message.error(`Failed to create category "${category}": ${err.message}`);
-                    }
-                  }
-                });
-                setSelectedCategories(newSelectedCategories);
-                form.setFieldsValue({ categories: value });
-              }}
+              onChange={handleCategoryChange}
+              onBlur={handleCategoryBlur}
               filterOption={false}
               options={categoryOptions}
             />
