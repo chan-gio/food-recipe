@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, message, Input, Space, Form } from "antd";
 import { userService } from "../../services/userService"; // Adjust the import path as needed
-import AdminUserModal from "../../Components/Modal/AdminUserModal"; // Import the new modal component
+import AdminUserModal from "../../components/Modal/AdminUserModal"; // Import the new modal component
 import "./UserManagement.module.scss"; // Update to .scss to match naming convention
 
 const { Search } = Input;

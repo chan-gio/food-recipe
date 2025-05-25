@@ -91,8 +91,8 @@
 
   img {
     object-fit: cover;
-    width: 500px; // Kept the 3x scaled logo
-    height: 135px;
+    max-width: 300px;
+    
   }
 }
 
@@ -142,46 +142,8 @@
   margin: 20px 0;
 }
 
-.subscribeSection {
-  display: flex;
-  flex-direction: row; // Horizontal layout for subscription section
-  align-items: center;
-  justify-content: center;
-  gap: 20px; // Space between text and button
-  margin-bottom: 40px;
-  width: 100%; // Ensure it takes full width for centering
-}
 
-.subscribeText {
-  h2 {
-    font-size: 24px;
-    font-weight: bold;
-    margin: 0;
-  }
 
-  p {
-    font-size: 14px;
-    color: #fff;
-    margin: 5px 0 0 0;
-  }
-}
-
-.subscribeButton {
-  background: #ff6666;
-  color: #fff;
-  border: none;
-  padding: 10px 20px;
-  font-size: 16px;
-  font-weight: bold;
-  border-radius: 25px;
-  cursor: pointer;
-  transition: background 0.3s;
-  white-space: nowrap; // Prevent button text from wrapping
-
-  &:hover {
-    background: #ff4d4d;
-  }
-}
 
 .footerLinks {
   display: flex;

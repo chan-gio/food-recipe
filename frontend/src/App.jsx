@@ -5,8 +5,8 @@ import {
   Route,
 } from "react-router-dom";
 import { Routes } from "./Routers/allrouters";
-import Layout from "./Components/Layout/Layout";
-import AdminLayout from "./Components/Layout/AdminLayout"; // Import the new AdminLayout
+import AdminLayout from "./components/Layout/AdminLayout"; // Import the new AdminLayout
+import Layout from "./components/Layout/Layout";
 
 const App = () => {
   return (

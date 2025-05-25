@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, message, Input, Space } from "antd";
 import { recipeService } from "../../services/recipeService"; // Adjust the import path as needed
-import AdminRecipeModal from "../../Components/Modal/AdminRecipeModal"; // Import the new modal component
+import AdminRecipeModal from "../../components/Modal/AdminRecipeModal"; // Import the new modal component
 import "./RecipeManagement.module.scss";
 
 const { Search } = Input;
