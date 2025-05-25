@@ -61,6 +61,36 @@ export class UserRepository implements IUserRepository {
     }
   }
 
+  async searchByFullNameAndEmail(
+    full_name: string,
+    email: string,
+    paginationDto: PaginationDto,
+  ): Promise<{ data: User[]; total: number }> {
+    try {
+      const { page = 1, limit = 10 } = paginationDto || {};
+      const skip = (page - 1) * limit;
+
+      const queryBuilder = this.userRepo.createQueryBuilder('user');
+
+      if (full_name) {
+        queryBuilder.andWhere('LOWER(user.full_name) LIKE LOWER(:full_name)', { full_name: `%${full_name}%` });
+      }
+      if (email) {
+        queryBuilder.andWhere('LOWER(user.email) LIKE LOWER(:email)', { email: `%${email}%` });
+      }
+
+      queryBuilder.skip(skip).take(limit);
+
+      const [data, total] = await queryBuilder.getManyAndCount();
+
+      this.logger.log(`Fetched ${data.length} users for search (full_name: ${full_name || 'N/A'}, email: ${email || 'N/A'}, page: ${page}, limit: ${limit})`);
+      return { data, total };
+    } catch (error) {
+      this.logger.error(`Failed to search users (full_name: ${full_name || 'N/A'}, email: ${email || 'N/A'}): ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
   async create(user: Partial<User>): Promise<User> {
     try {
       const newUser = this.userRepo.create(user);

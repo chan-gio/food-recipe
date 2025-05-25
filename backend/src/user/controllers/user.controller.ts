@@ -30,6 +30,31 @@ export class UserController {
     };
   }
 
+  @Get('search')
+  @UsePipes(new ValidationPipe({ whitelist: true }))
+  async searchByFullNameAndEmail(
+    @Query('full_name') full_name: string,
+    @Query('email') email: string,
+    @Query() paginationDto: PaginationDto,
+  ): Promise<Response<User[]>> {
+    const { data, total } = await this.userService.searchByFullNameAndEmail(
+      full_name,
+      email,
+      paginationDto,
+    );
+    return {
+      data,
+      meta: {
+        total,
+        page: paginationDto.page ?? 1,
+        limit: paginationDto.limit ?? 10,
+        totalPages: Math.ceil(total / (paginationDto.limit ?? 10)),
+      },
+      message: 'Users retrieved successfully',
+      code: 200,
+    };
+  }
+
   @Get(':id')
   async findById(@Param('id', ParseIntPipe) id: number): Promise<Response<User | null>> {
     const data = await this.userService.findById(id);

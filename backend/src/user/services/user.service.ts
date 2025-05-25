@@ -74,6 +74,14 @@ export class UserService implements IUserService {
     return this.userRepository.create(user);
   }
 
+  async searchByFullNameAndEmail(
+    full_name: string,
+    email: string,
+    paginationDto: PaginationDto,
+  ): Promise<{ data: User[]; total: number }> {
+    return this.userRepository.searchByFullNameAndEmail(full_name, email, paginationDto);
+  }
+
   async update(id: number, dto: UpdateUserDto, file?: Express.Multer.File): Promise<User> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
