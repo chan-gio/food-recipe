@@ -18,7 +18,15 @@ class CategoryService {
         `/categories/name/${encodeURIComponent(name)}`,
         { params }
       );
-      return response.data;
+      // Điều chỉnh để phù hợp với dữ liệu trả về
+      return {
+        data: response.data.data,
+        meta: {
+          page: params.page || 1,
+          limit: params.limit || 10,
+          total: response.data.data.length, // Giả sử total dựa trên length của data
+        },
+      };
     } catch (error) {
       throw new Error(
         error.response?.data?.message || "Failed to fetch categories by name"

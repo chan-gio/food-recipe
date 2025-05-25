@@ -49,10 +49,12 @@ const ProfilePage = () => {
         setOriginalProfile(userProfile); // Store original profile for comparison
 
         // Initialize editable fields
-        const [fName, lName] = userProfile.full_name ? userProfile.full_name.split(' ') : ['', ''];
-        setFirstName(fName || '');
-        setLastName(lName || '');
-        setEmail(userProfile.email || '');
+        const [fName, lName] = userProfile.full_name
+          ? userProfile.full_name.split(" ")
+          : ["", ""];
+        setFirstName(fName || "");
+        setLastName(lName || "");
+        setEmail(userProfile.email || "");
       } catch (err) {
         setError(err.message);
       } finally {
@@ -63,7 +65,10 @@ const ProfilePage = () => {
     const fetchRecipes = async () => {
       setRecipesLoading(true);
       try {
-        const response = await recipeService.getRecipesByUserId(userId, { page: recipePage, limit });
+        const response = await recipeService.getRecipesByUserId(userId, {
+          page: recipePage,
+          limit,
+        });
         setRecipes(response.data);
         setRecipeMeta(response.meta);
       } catch (err) {
@@ -76,7 +81,10 @@ const ProfilePage = () => {
     const fetchFavorites = async () => {
       setFavoritesLoading(true);
       try {
-        const response = await favoriteService.getFavoritesByUserId(userId, { page: favoritePage, limit });
+        const response = await favoriteService.getFavoritesByUserId(userId, {
+          page: favoritePage,
+          limit,
+        });
         setFavorites(response.data);
         setFavoriteMeta(response.meta);
       } catch (err) {
@@ -89,7 +97,10 @@ const ProfilePage = () => {
     const fetchComments = async () => {
       setCommentsLoading(true);
       try {
-        const response = await reviewService.getReviewsByUserId(userId, { page: commentPage, limit });
+        const response = await reviewService.getReviewsByUserId(userId, {
+          page: commentPage,
+          limit,
+        });
         setComments(response.data);
         setCommentMeta(response.meta);
       } catch (err) {
@@ -108,12 +119,22 @@ const ProfilePage = () => {
     } else if (activeSection === "comments") {
       fetchComments();
     }
-  }, [activeSection, recipePage, favoritePage, commentPage, isAuthenticated, userId]);
+  }, [
+    activeSection,
+    recipePage,
+    favoritePage,
+    commentPage,
+    isAuthenticated,
+    userId,
+  ]);
 
   const handleDeleteRecipe = async (id) => {
     try {
       await recipeService.deleteRecipe(id);
-      const response = await recipeService.getRecipesByUserId(userId, { page: recipePage, limit });
+      const response = await recipeService.getRecipesByUserId(userId, {
+        page: recipePage,
+        limit,
+      });
       setRecipes(response.data);
       setRecipeMeta(response.meta);
     } catch (err) {
@@ -124,7 +145,10 @@ const ProfilePage = () => {
   const handleRemoveFavorite = async (recipeId) => {
     try {
       await favoriteService.deleteFavorite(userId, recipeId);
-      const response = await favoriteService.getFavoritesByUserId(userId, { page: favoritePage, limit });
+      const response = await favoriteService.getFavoritesByUserId(userId, {
+        page: favoritePage,
+        limit,
+      });
       setFavorites(response.data);
       setFavoriteMeta(response.meta);
     } catch (err) {
@@ -149,7 +173,7 @@ const ProfilePage = () => {
       setProfile(response.data);
       setOriginalProfile(response.data);
       setIsEditingProfile(false);
-      setError('');
+      setError("");
     } catch (err) {
       setError(err.message);
     }
@@ -164,14 +188,14 @@ const ProfilePage = () => {
     };
 
     // Check if there are actual changes
-    const originalFullName = originalProfile?.full_name || '';
-    const originalEmail = originalProfile?.email || '';
+    const originalFullName = originalProfile?.full_name || "";
+    const originalEmail = originalProfile?.email || "";
     const hasChanges =
       (userData.full_name && userData.full_name !== originalFullName) ||
       (userData.email && userData.email !== originalEmail);
 
     if (!hasChanges) {
-      setError('No changes detected');
+      setError("No changes detected");
       setIsEditingProfile(false);
       return;
     }
@@ -181,7 +205,7 @@ const ProfilePage = () => {
       setProfile(response.data);
       setOriginalProfile(response.data); // Update original profile after save
       setIsEditingProfile(false);
-      setError('');
+      setError("");
     } catch (err) {
       setError(err.message);
     }
@@ -189,7 +213,7 @@ const ProfilePage = () => {
 
   const handleEditProfile = () => {
     setIsEditingProfile(true);
-    setError('');
+    setError("");
   };
 
   const renderSection = () => {
@@ -198,7 +222,7 @@ const ProfilePage = () => {
         return (
           <div className={styles.profileSection}>
             <h2>Profile</h2>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
+            {error && <p style={{ color: "red" }}>{error}</p>}
             {profileLoading ? (
               <p>Loading...</p>
             ) : !profile ? (
@@ -253,7 +277,7 @@ const ProfilePage = () => {
         return (
           <div className={styles.myRecipesSection}>
             <h2>My Recipes</h2>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
+            {error && <p style={{ color: "red" }}>{error}</p>}
             {recipesLoading ? (
               <p>Loading...</p>
             ) : recipes.length === 0 ? (
@@ -302,7 +326,7 @@ const ProfilePage = () => {
         return (
           <div className={styles.favoriteRecipesSection}>
             <h2>Favorite Recipes</h2>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
+            {error && <p style={{ color: "red" }}>{error}</p>}
             {favoritesLoading ? (
               <p>Loading...</p>
             ) : favorites.length === 0 ? (
@@ -346,7 +370,7 @@ const ProfilePage = () => {
         return (
           <div className={styles.commentsSection}>
             <h2>Your Comments</h2>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
+            {error && <p style={{ color: "red" }}>{error}</p>}
             {commentsLoading ? (
               <p>Loading...</p>
             ) : comments.length === 0 ? (
@@ -409,9 +433,11 @@ const ProfilePage = () => {
               <div
                 className={styles.avatar}
                 style={{
-                  backgroundImage: profile.profile_picture ? `url(${profile.profile_picture})` : 'none',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
+                  backgroundImage: profile.profile_picture
+                    ? `url(${profile.profile_picture})`
+                    : "none",
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
                 }}
                 onClick={handleAvatarClick}
               />
@@ -419,11 +445,11 @@ const ProfilePage = () => {
                 type="file"
                 accept="image/*"
                 ref={fileInputRef}
-                style={{ display: 'none' }}
+                style={{ display: "none" }}
                 onChange={handleAvatarChange}
               />
-              <h2>{profile.full_name || 'Unknown'}</h2>
-              <p>{profile.email || 'No email'}</p>
+              <h2>{profile.full_name || "Unknown"}</h2>
+              <p>{profile.email || "No email"}</p>
             </>
           )}
         </Card>

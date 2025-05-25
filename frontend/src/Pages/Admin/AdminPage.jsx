@@ -32,14 +32,6 @@ const AdminPage = () => {
           >
             Categories Management
           </NavLink>
-          <NavLink
-            to="/admin/ingredients"
-            className={({ isActive }) =>
-              `${styles.navButton} ${isActive ? styles.active : ""}`
-            }
-          >
-            Ingredients Management
-          </NavLink>
         </nav>
       </div>
       <div className={styles.content}>

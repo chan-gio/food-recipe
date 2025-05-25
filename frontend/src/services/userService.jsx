@@ -67,6 +67,17 @@ class UserService {
       throw new Error(error.response?.data?.message || 'Failed to delete user');
     }
   }
+// Search a user
+  async searchUsers({ full_name, email, page = 1, limit = 10 }) {
+    try {
+      const response = await api.get('/users/search', {
+        params: { full_name, email, page, limit },
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Failed to search users');
+    }
+  }
 }
 
 export const userService = new UserService();

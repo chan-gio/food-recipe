@@ -1,6 +1,6 @@
 import React from "react";
 import { Layout, Menu, Input } from "antd";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // Thêm useNavigate
 import logo from "../../assets/image/logo.svg";
 import {
   HomeOutlined,
@@ -15,8 +15,16 @@ const { Header } = Layout;
 const { Search } = Input;
 
 const CustomHeader = () => {
+  const navigate = useNavigate(); // Khởi tạo useNavigate
+
   const onSearch = (value) => {
-    console.log("Search:", value);
+    if (value.trim()) {
+      // Chuyển hướng đến /allrecipes với query parameter search
+      navigate(`/allrecipes?search=${encodeURIComponent(value.trim())}`);
+    } else {
+      // Nếu không có từ khóa, chuyển hướng đến /allrecipes mà không có query
+      navigate("/allrecipes");
+    }
   };
 
   return (

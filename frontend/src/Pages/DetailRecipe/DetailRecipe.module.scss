@@ -1,46 +1,45 @@
 .container {
-  padding: 20px;
-  max-width: 900px;
+  padding: 32px;
+  max-width: 1000px;
   margin: 0 auto;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  font-family: 'Inter', sans-serif;
 }
 
 .skeletonContainer {
-  padding: 20px;
-  max-width: 900px;
+  padding: 32px;
+  max-width: 1000px;
   margin: 0 auto;
 }
 
 .skeletonActions {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .skeletonImage {
   width: 100%;
-  height: 400px;
+  height: 450px;
+  border-radius: 12px;
 }
 
 .skeletonInfoSection {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
 .skeletonRecipeDetails {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 32px;
 }
 
-.skeletonDirections {
-  flex: 1;
-}
-
+.skeletonDirections,
 .skeletonIngredients {
-  flex: 1;
+  width: 100%;
 }
 
 .skeletonReviewsSection {
@@ -48,73 +47,80 @@
 }
 
 .title {
-  font-size: 28px;
-  font-weight: bold;
-  margin-bottom: 10px;
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #1a1a1a;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+}
+
+.units {
+  font-size: 14px;
+  font-weight: 500;
+  color: #ff6f61;
   text-transform: uppercase;
-  width: 100%;
-  text-align: left;
-  color: #333;
+  margin-bottom: 12px;
+  letter-spacing: 0.5px;
 }
 
 .rating {
   display: flex;
   align-items: center;
-  margin-bottom: 10px;
-  width: 100%;
-  justify-content: flex-start;
+  gap: 8px;
+  margin-bottom: 16px;
 }
 
 .reviewCount {
-  margin-left: 5px;
-  font-size: 14px;
+  font-size: 16px;
   color: #666;
 }
 
 .submitted {
   display: flex;
   align-items: center;
-  margin-bottom: 10px;
-  position: relative;
-  width: 100%;
-  justify-content: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
 .submittedText {
-  margin-left: 10px;
-  font-size: 14px;
-  color: #ff6600;
+  font-size: 16px;
+  font-weight: 500;
+  color: #ff6f61;
 }
 
 .dots {
-  position: absolute;
-  right: 0;
-  font-size: 20px;
-  color: #999;
+  font-size: 24px;
+  color: #ccc;
+  margin-left: auto;
 }
 
 .description {
   font-size: 16px;
-  color: #666;
-  margin-bottom: 20px;
-  font-style: italic;
-  width: 100%;
-  text-align: left;
+  color: #4a4a4a;
   line-height: 1.6;
+  margin-bottom: 24px;
 }
 
 .actions {
   display: flex;
-  gap: 10px;
-  width: 100%;
-  margin-bottom: 20px;
-  justify-content: flex-start;
+  gap: 12px;
+  margin-bottom: 24px;
 }
 
 .madeButton {
-  background-color: #fadb14 !important;
-  border-color: #fadb14 !important;
-  color: #000 !important;
+  background-color: #ff6f61 !important;
+  border-color: #ff6f61 !important;
+  color: #fff !important;
+  border-radius: 8px;
+  padding: 0 16px;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.madeButton:hover {
+  background-color: #ff4d4f !important;
+  border-color: #ff4d4f !important;
 }
 
 .favoritedButton {
@@ -122,314 +128,327 @@
 }
 
 .divider {
-  margin: 20px 0;
+  margin: 32px 0;
   border-top: 1px solid #e8e8e8;
 }
 
 .imageSection {
-  width: 100%;
-  margin-bottom: 20px;
+  margin-bottom: 32px;
+  position: relative;
 }
 
 .mainImageContainer {
   position: relative;
   width: 100%;
-  height: 400px;
+  height: 450px;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .carousel {
   width: 100%;
-  height: 400px;
+  height: 450px;
+  position: relative;
 }
 
 .mainImage {
   width: 100%;
-  height: 400px;
+  height: 100%;
   object-fit: cover;
-  border-radius: 8px;
 }
 
 .imageCredit {
   position: absolute;
-  bottom: 10px;
-  right: 10px;
-  background: rgba(0, 0, 0, 0.5);
-  color: white;
-  padding: 5px 10px;
+  bottom: 16px;
+  right: 16px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  padding: 6px 12px;
   font-size: 12px;
-  border-radius: 5px;
+  border-radius: 6px;
+  font-weight: 500;
 }
 
+:global {
+  .slick-prev,
+  .slick-next {
+    background-color: grey !important; /* Nền trắng */
+    color: #1a1a1a !important; /* Màu icon tối */
+    border: 1px solid grey !important; /* Viền nhẹ */
+    border-radius: 50% !important;
+    width: 48px !important; /* Kích thước to hơn */
+    height: 48px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 24px !important; /* Icon lớn hơn */
+    cursor: pointer !important;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important; /* Bóng nhẹ */
+    z-index: 10 !important;
+  }
+
+  .slick-prev {
+    left: 2px !important; /* Căn sát bên trái */
+  }
+
+  .slick-next {
+    right: 2px !important; /* Căn sát bên phải */
+  }
+
+  .slick-prev:hover,
+  .slick-next:hover {
+    background-color: #f9f9f9 !important; /* Nền sáng hơn khi hover */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important; /* Bóng đậm hơn */
+  }
+
+  .slick-prev:active,
+  .slick-next:active {
+    transform: scale(0.95) !important;
+  }
+
+  .slick-prev.slick-disabled,
+  .slick-next.slick-disabled {
+    background-color: #f0f0f0 !important; /* Nền xám khi disabled */
+    color: #ccc !important;
+    border-color: #e8e8e8 !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+  }
+
+  .slick-prev:before,
+  .slick-next:before {
+    display: none !important; /* Ẩn icon mặc định của slick */
+  }
+  .slick-prev:after,
+  .slick-next:after {
+    display: none !important; /* Ẩn icon mặc định của slick */
+  }
+}
+
+
 .videoContainer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
 }
 
 .video {
-  width: 300px;
+  width: 100%;
   height: 200px;
-  border-radius: 8px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .infoSection {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 10px;
-  margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-bottom: 32px;
 }
 
 .infoItem {
   display: flex;
   align-items: center;
-  gap: 10px;
-  width: 100%;
+  gap: 12px;
 }
 
 .infoLabel {
   font-size: 16px;
-  color: #333;
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.servingControls {
+  display: flex;
+  gap: 8px;
+}
+
+.servingControls .ant-btn {
+  border-radius: 6px;
+  border: 1px solid #e8e8e8;
+  background-color: #f9f9f9;
 }
 
 :global(.ant-rate-star) {
   color: #ff4d4f !important;
 }
 
-.servingControls {
-  display: flex;
-  gap: 5px;
-}
-
 .recipeDetails {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 32px;
 }
 
 .directions {
-  flex: 1;
-  text-align: left;
+  background-color: #f9fafb;
+  padding: 24px;
+  border-radius: 12px;
 }
 
 .sectionTitle {
-  font-size: 18px;
-  font-weight: bold;
-  color: #ff6600;
-  margin-bottom: 10px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .directionList {
-  padding-left: 20px;
-  list-style-position: outside;
-  color: #333;
+  padding-left: 24px;
+  list-style-type: decimal;
 }
 
 .directionList li {
-  font-size: 14px;
-  margin-bottom: 10px;
-  line-height: 1.5;
+  font-size: 16px;
+  color: #4a4a4a;
+  margin-bottom: 12px;
+  line-height: 1.6;
 }
 
 .ingredients {
-  flex: 1;
-  text-align: left;
-}
-
-.units {
-  font-size: 14px;
-  color: #ff6600;
-  margin-bottom: 10px;
+  background-color: #f9fafb;
+  padding: 24px;
+  border-radius: 12px;
 }
 
 .ingredientList {
-  padding-left: 20px;
-  list-style-position: outside;
-  color: #333;
+  padding-left: 24px;
+  list-style-type: disc;
 }
 
 .ingredientList li {
-  font-size: 14px;
-  margin-bottom: 5px;
-  line-height: 1.5;
+  font-size: 16px;
+  color: #4a4a4a;
+  margin-bottom: 8px;
+  line-height: 1.6;
 }
 
 .reviewsSection {
-  width: 100%;
+  margin-top: 32px;
 }
 
 .reviewsHeader {
   display: flex;
   align-items: center;
-  margin-bottom: 20px;
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
 .sortSelect {
-  margin-left: auto;
-  margin-right: 10px;
+  width: 200px;
 }
 
 .writeReviewButton {
-  background-color: #fadb14 !important;
-  border-color: #fadb14 !important;
-  color: #000 !important;
+  background-color: #ff6f61 !important;
+  border-color: #ff6f61 !important;
+  color: #fff !important;
+  border-radius: 8px;
+  padding: 0 16px;
+  font-weight: 500;
 }
 
 .review {
-  text-align: left;
-  margin-bottom: 20px;
+  background-color: #ffffff;
+  padding: 20px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.3s ease;
+}
+
+.review:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.topLevelReview {
+  border: 1px solid #e8e8e8;
+}
+
+.replyReview {
+  background-color: #f0f7ff;
+  border-left: 4px solid #1890ff;
+  margin-left: 24px;
 }
 
 .reviewHeader {
   display: flex;
   align-items: center;
-  position: relative;
-  margin-bottom: 10px;
-}
-
-.reviewAvatar {
-  margin-right: 10px;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
 .reviewRating {
-  margin-right: 10px;
+  font-size: 16px;
 }
 
 .reviewDots {
-  position: absolute;
-  right: 0;
+  margin-left: auto;
   font-size: 20px;
-  color: #999;
+  color: #ccc;
 }
 
 .reviewContent {
-  font-size: 14px;
-  color: #333;
-  margin-bottom: 10px;
-  line-height: 1.5;
+  font-size: 16px;
+  color: #4a4a4a;
+  line-height: 1.6;
+  margin-bottom: 12px;
 }
 
 .reviewFooter {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: #888;
 }
 
 .reviewer {
-  font-size: 14px;
-  color: #ff6600;
+  font-weight: 500;
+  color: #ff6f61;
 }
 
 .timestamp {
-  font-size: 12px;
   color: #666;
 }
 
+.replyButton,
+.toggleRepliesButton {
+  font-size: 14px;
+  color: #1890ff;
+  padding: 0;
+}
+
+.replies {
+  margin-top: 16px;
+}
+
 .reviewDivider {
-  margin: 10px 0;
+  margin: 16px 0;
   border-top: 1px solid #e8e8e8;
 }
 
 .reviewModal {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .ratingSection {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .ratingLabel {
-  font-size: 14px;
-  color: #333;
+  font-size: 16px;
+  font-weight: 500;
+  color: #1a1a1a;
 }
 
 .reviewInput {
-  width: 100%;
-}
-
-.review {
-  background-color: #fff;
-  padding: 15px;
-  margin-bottom: 10px;
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.2s ease;
-}
-
-.topLevelReview {
-  background-color: #f9f9f9;
-  border: 1px solid #e8e8e8;
-}
-
-.replyReview {
-  background-color: #f0f7ff;
-  border-left: 3px solid #1890ff;
-  margin-left: 20px;
-}
-
-.review:hover {
-  background-color: #f5f5f5;
-}
-
-.replies {
-  margin-top: 10px;
-}
-
-.replyButton {
-  padding: 0;
-  font-size: 12px;
-  color: #1890ff;
-}
-
-.toggleRepliesButton {
-  padding: 0;
-  font-size: 12px;
-  color: #1890ff;
-  margin-left: 10px;
-}
-
-.reviewHeader {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.reviewRating {
-  margin-left: 10px;
-}
-
-.reviewDots {
-  flex-grow: 1;
-  text-align: right;
-}
-
-.reviewContent {
-  margin-bottom: 10px;
-  color: #333;
-}
-
-.reviewFooter {
-  display: flex;
-  align-items: center;
-  color: #888;
-  font-size: 12px;
-}
-
-.reviewer {
-  margin-right: 10px;
-}
-
-.timestamp {
-  margin-right: 10px;
-}
-
-.reviewDivider {
-  margin: 10px 0;
+  resize: vertical;
 }

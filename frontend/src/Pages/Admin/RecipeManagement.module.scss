@@ -10,30 +10,26 @@
 
       h2 {
         margin: 0 !important;
-        font-size: 20px !important;
+        font-size: 24px !important;
+        font-weight: 600 !important;
         color: #333 !important;
-      }
-
-      .add-button {
-        background-color: #1890ff !important;
-        color: white !important;
-        border: none !important;
-        &:hover {
-          background-color: #40a9ff !important;
-        }
       }
     }
 
     .ant-table {
+      border-radius: 8px !important;
+      overflow: hidden !important;
+
       .ant-table-thead > tr > th {
         background-color: #f0f2f5 !important;
-        font-weight: bold !important;
+        font-weight: 600 !important;
       }
 
       .view-button {
         background-color: #28a745 !important;
         color: white !important;
         border: none !important;
+
         &:hover {
           background-color: #218838 !important;
         }
@@ -43,8 +39,19 @@
         background-color: #dc3545 !important;
         color: white !important;
         border: none !important;
+
         &:hover {
           background-color: #c82333 !important;
+        }
+      }
+
+      .reviews-button {
+        background-color: #5f2eea !important;
+        color: white !important;
+        border: none !important;
+
+        &:hover {
+          background-color: #4a22b5 !important;
         }
       }
 

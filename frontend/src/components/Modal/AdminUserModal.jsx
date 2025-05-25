@@ -24,10 +24,7 @@ const AdminUserModal = ({ visible, onClose, onSave, user, form }) => {
         <div className="user-header">
           <Avatar
             size={64}
-            src={
-              user.profile_picture ||
-              "https://randomuser.me/api/portraits/men/1.jpg"
-            }
+            src={user.profile_picture || null} // Leave empty if no profile picture
             className="user-avatar"
           />
           <h2 className="user-name">{user.full_name || "Unknown User"}</h2>
@@ -54,12 +51,9 @@ const AdminUserModal = ({ visible, onClose, onSave, user, form }) => {
           >
             <Input />
           </Form.Item>
-          <Form.Item
-            label="Role"
-            name="role"
-            rules={[{ required: true, message: "Please input the role!" }]}
-          >
-            <Input />
+          {/* Display role as read-only */}
+          <Form.Item label="Role" name="role">
+            <Input disabled value={user.role || ""} />
           </Form.Item>
         </Form>
       </div>

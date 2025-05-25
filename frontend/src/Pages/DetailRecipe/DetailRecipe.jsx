@@ -25,6 +25,7 @@ import {
   DownOutlined,
   UpOutlined,
 } from "@ant-design/icons";
+import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import { useParams } from "react-router-dom";
 import { recipeService } from "../../services/recipeService";
 import { favoriteService } from "../../services/favoriteService";
@@ -64,8 +65,12 @@ const DetailRecipe = () => {
         setServings(recipeData.servings || 1);
 
         if (isAuthenticated && userId) {
-          const favoritesResponse = await favoriteService.getFavoritesByUserId(userId);
-          const isFav = favoritesResponse.data.some(fav => fav.recipe_id === parseInt(id));
+          const favoritesResponse = await favoriteService.getFavoritesByUserId(
+            userId
+          );
+          const isFav = favoritesResponse.data.some(
+            (fav) => fav.recipe_id === parseInt(id)
+          );
           setIsFavorited(isFav);
         }
       } catch (err) {
@@ -83,7 +88,10 @@ const DetailRecipe = () => {
     const fetchReviews = async () => {
       setLoadingReviews(true);
       try {
-        const response = await reviewService.getReviewsByRecipeId(id, { page: 1, limit: 10 });
+        const response = await reviewService.getReviewsByRecipeId(id, {
+          page: 1,
+          limit: 10,
+        });
         setReviews(response.data || []);
       } catch (err) {
         setErrorReviews(err.message);
@@ -140,7 +148,11 @@ const DetailRecipe = () => {
       }
 
       await reviewService.createReview(reviewData);
-      message.success(parentReviewId === null ? "Review submitted successfully" : "Reply submitted successfully");
+      message.success(
+        parentReviewId === null
+          ? "Review submitted successfully"
+          : "Reply submitted successfully"
+      );
       setIsReviewModalVisible(false);
       setIsReplyModalVisible(false);
       setRating(0);
@@ -148,7 +160,10 @@ const DetailRecipe = () => {
       setParentReviewId(null);
 
       // Refresh reviews
-      const response = await reviewService.getReviewsByRecipeId(id, { page: 1, limit: 10 });
+      const response = await reviewService.getReviewsByRecipeId(id, {
+        page: 1,
+        limit: 10,
+      });
       setReviews(response.data || []);
     } catch (err) {
       message.error(err.message);
@@ -206,18 +221,31 @@ const DetailRecipe = () => {
     const isExpanded = expandedReplies[review.review_id] || false;
 
     return (
-      <div className={`${styles.review} ${level === 0 ? styles.topLevelReview : styles.replyReview}`}>
+      <div
+        className={`${styles.review} ${
+          level === 0 ? styles.topLevelReview : styles.replyReview
+        }`}
+      >
         <div className={styles.reviewHeader}>
           <Avatar
             size={32}
-            src={review.user?.profile_picture || "https://randomuser.me/api/portraits/women/2.jpg"}
+            src={
+              review.user?.profile_picture ||
+              "https://randomuser.me/api/portraits/women/2.jpg"
+            }
           />
-          <Rate disabled value={review.rating || 0} className={styles.reviewRating} />
+          <Rate
+            disabled
+            value={review.rating || 0}
+            className={styles.reviewRating}
+          />
           <div className={styles.reviewDots}>...</div>
         </div>
         <p className={styles.reviewContent}>{review.comment}</p>
         <div className={styles.reviewFooter}>
-          <span className={styles.reviewer}>{review.user?.full_name || "Anonymous"}</span>
+          <span className={styles.reviewer}>
+            {review.user?.full_name || "Anonymous"}
+          </span>
           <span className={styles.timestamp}>
             {dayjs(review.created_at).format("MMMM Do YYYY, h:mm a")}
           </span>
@@ -235,14 +263,20 @@ const DetailRecipe = () => {
               onClick={() => toggleReplies(review.review_id)}
               icon={isExpanded ? <UpOutlined /> : <DownOutlined />}
             >
-              {isExpanded ? `Hide Replies (${review.replies.length})` : `Show Replies (${review.replies.length})`}
+              {isExpanded
+                ? `Hide Replies (${review.replies.length})`
+                : `Show Replies (${review.replies.length})`}
             </Button>
           )}
         </div>
         {hasReplies && isExpanded && (
           <div className={styles.replies}>
             {review.replies.map((reply) => (
-              <ReviewItem key={reply.review_id} review={reply} level={level + 1} />
+              <ReviewItem
+                key={reply.review_id}
+                review={reply}
+                level={level + 1}
+              />
             ))}
           </div>
         )}
@@ -254,32 +288,55 @@ const DetailRecipe = () => {
   if (loading) {
     return (
       <div className={styles.skeletonContainer}>
-        <Skeleton active title={{ width: '50%' }} paragraph={false} />
-        <Skeleton active avatar paragraph={{ rows: 1, width: ['20%'] }} />
-        <Skeleton active paragraph={{ rows: 2, width: ['80%', '60%'] }} />
-        <Skeleton active paragraph={{ rows: 0 }} className={styles.skeletonActions} />
+        <Skeleton active title={{ width: "50%" }} paragraph={false} />
+        <Skeleton active avatar paragraph={{ rows: 1, width: ["20%"] }} />
+        <Skeleton active paragraph={{ rows: 2, width: ["80%", "60%"] }} />
+        <Skeleton
+          active
+          paragraph={{ rows: 0 }}
+          className={styles.skeletonActions}
+        />
         <Divider className={styles.divider} />
         <Skeleton.Image active className={styles.skeletonImage} />
         <Divider className={styles.divider} />
         <div className={styles.skeletonInfoSection}>
-          <Skeleton active paragraph={{ rows: 1, width: ['30%'] }} />
-          <Skeleton active paragraph={{ rows: 1, width: ['20%'] }} />
-          <Skeleton active paragraph={{ rows: 1, width: ['20%'] }} />
+          <Skeleton active paragraph={{ rows: 1, width: ["30%"] }} />
+          <Skeleton active paragraph={{ rows: 1, width: ["20%"] }} />
+          <Skeleton active paragraph={{ rows: 1, width: ["20%"] }} />
         </div>
         <Divider className={styles.divider} />
         <div className={styles.skeletonRecipeDetails}>
           <div className={styles.skeletonDirections}>
-            <Skeleton active title={{ width: '30%' }} paragraph={{ rows: 5, width: ['90%', '80%', '70%', '60%', '50%'] }} />
+            <Skeleton
+              active
+              title={{ width: "30%" }}
+              paragraph={{
+                rows: 5,
+                width: ["90%", "80%", "70%", "60%", "50%"],
+              }}
+            />
           </div>
           <div className={styles.skeletonIngredients}>
-            <Skeleton active title={{ width: '30%' }} paragraph={{ rows: 3, width: ['60%', '50%', '40%'] }} />
+            <Skeleton
+              active
+              title={{ width: "30%" }}
+              paragraph={{ rows: 3, width: ["60%", "50%", "40%"] }}
+            />
           </div>
         </div>
         <Divider className={styles.divider} />
         <div className={styles.skeletonReviewsSection}>
-          <Skeleton active title={{ width: '20%' }} paragraph={false} />
-          <Skeleton active avatar paragraph={{ rows: 2, width: ['80%', '60%'] }} />
-          <Skeleton active avatar paragraph={{ rows: 2, width: ['80%', '60%'] }} />
+          <Skeleton active title={{ width: "20%" }} paragraph={false} />
+          <Skeleton
+            active
+            avatar
+            paragraph={{ rows: 2, width: ["80%", "60%"] }}
+          />
+          <Skeleton
+            active
+            avatar
+            paragraph={{ rows: 2, width: ["80%", "60%"] }}
+          />
         </div>
       </div>
     );
@@ -293,54 +350,77 @@ const DetailRecipe = () => {
     return <div className={styles.container}>Recipe not found</div>;
   }
 
-  const averageRating = reviews && reviews.length > 0
-    ? reviews
-        .filter(review => !review.parent)
-        .reduce((sum, review) => sum + (review.rating || 0), 0) /
-        reviews.filter(review => !review.parent).length
-    : 0;
+  const averageRating =
+    reviews && reviews.length > 0
+      ? reviews
+          .filter((review) => !review.parent)
+          .reduce((sum, review) => sum + (review.rating || 0), 0) /
+        reviews.filter((review) => !review.parent).length
+      : 0;
 
   const servingMultiplier = servings / (recipe.servings || 1);
-  const scaledIngredients = recipe.ingredients.map(ingredient => ({
+  const scaledIngredients = recipe.ingredients.map((ingredient) => ({
     ...ingredient,
-    amount: ingredient.amount ? (ingredient.amount * servingMultiplier).toFixed(2) : ingredient.amount,
+    amount: ingredient.amount
+      ? (ingredient.amount * servingMultiplier).toFixed(2)
+      : ingredient.amount,
   }));
 
   return (
     <div className={styles.container}>
       {recipe.categories && recipe.categories.length > 0 && (
         <div className={styles.units}>
-          <span>CATEGORY: {recipe.categories.map(cat => cat.category_name).join(', ')}</span>
+          <span>
+            CATEGORY:{" "}
+            {recipe.categories.map((cat) => cat.category_name).join(", ")}
+          </span>
         </div>
       )}
       <h1 className={styles.title}>{recipe.recipe_name}</h1>
       <div className={styles.rating}>
         <Rate disabled value={averageRating} />
         <span className={styles.reviewCount}>
-          ({reviews?.filter(review => !review.parent).length || 0})
+          ({reviews?.filter((review) => !review.parent).length || 0})
         </span>
       </div>
       <div className={styles.submitted}>
         <Avatar
           size={32}
-          src={reviews.user?.profile_picture || "https://randomuser.me/api/portraits/women/1.jpg"}
+          src={
+            reviews.user?.profile_picture ||
+            "https://randomuser.me/api/portraits/women/1.jpg"
+          }
         />
-        <span className={styles.submittedText}>{recipe.user?.full_name || "Unknown User"}</span>
+        <span className={styles.submittedText}>
+          {recipe.user?.full_name || "Unknown User"}
+        </span>
         <div className={styles.dots}>...</div>
       </div>
       <p className={styles.description}>{recipe.description}</p>
       <Space className={styles.actions}>
-        <Button icon={<BookOutlined />} onClick={() => message.info("Saved to cookbook")} />
-        <Button icon={<DownloadOutlined />} onClick={() => message.info("Downloading recipe")} />
+        <Button
+          icon={<BookOutlined />}
+          onClick={() => message.info("Saved to cookbook")}
+        />
+        <Button
+          icon={<DownloadOutlined />}
+          onClick={() => message.info("Downloading recipe")}
+        />
         <Button icon={<PrinterOutlined />} onClick={() => window.print()} />
-        <Button icon={<UndoOutlined />} onClick={() => message.info("Shared")} />
+        <Button
+          icon={<UndoOutlined />}
+          onClick={() => message.info("Shared")}
+        />
         <Button
           icon={isFavorited ? <HeartFilled /> : <HeartOutlined />}
           onClick={handleFavoriteToggle}
           className={isFavorited ? styles.favoritedButton : ""}
         />
         <Button type="primary" className={styles.madeButton}>
-          <span role="img" aria-label="camera">📷</span> I MADE THIS
+          <span role="img" aria-label="camera">
+            📷
+          </span>{" "}
+          I MADE THIS
         </Button>
       </Space>
       <Divider className={styles.divider} />
@@ -348,17 +428,44 @@ const DetailRecipe = () => {
       <div className={styles.imageSection}>
         <div className={styles.mainImageContainer}>
           {recipe.images && recipe.images.length > 0 ? (
-            <Carousel autoplay className={styles.carousel}>
-              {recipe.images.map((image, index) => (
-                <div key={index}>
-                  <img
-                    src={image}
-                    alt={`${recipe.recipe_name} ${index + 1}`}
-                    className={styles.mainImage}
-                  />
-                </div>
-              ))}
-            </Carousel>
+            <div className={styles.mainImageContainer}>
+              {recipe.images && recipe.images.length > 0 ? (
+                <Carousel
+                  autoplay
+                  className={styles.carousel}
+                  arrows
+                  prevArrow={
+                    <button className={styles.carouselArrow}>
+                      <LeftOutlined />
+                    </button>
+                  }
+                  nextArrow={
+                    <button className={styles.carouselArrow}>
+                      <RightOutlined />
+                    </button>
+                  }
+                >
+                  {recipe.images.map((image, index) => (
+                    <div key={index}>
+                      <img
+                        src={image}
+                        alt={`${recipe.recipe_name} ${index + 1}`}
+                        className={styles.mainImage}
+                      />
+                    </div>
+                  ))}
+                </Carousel>
+              ) : (
+                <img
+                  src="https://via.placeholder.com/600x400"
+                  alt="Placeholder"
+                  className={styles.mainImage}
+                />
+              )}
+              <div className={styles.imageCredit}>
+                PHOTO BY {recipe.user?.full_name || "Unknown"}
+              </div>
+            </div>
           ) : (
             <img
               src="https://via.placeholder.com/600x400"
@@ -392,12 +499,22 @@ const DetailRecipe = () => {
         <div className={styles.infoItem}>
           <span className={styles.infoLabel}>🍽️ Serves: {servings}</span>
           <div className={styles.servingControls}>
-            <Button icon={<MinusOutlined />} size="small" onClick={() => handleServingsChange(false)} />
-            <Button icon={<PlusOutlined />} size="small" onClick={() => handleServingsChange(true)} />
+            <Button
+              icon={<MinusOutlined />}
+              size="small"
+              onClick={() => handleServingsChange(false)}
+            />
+            <Button
+              icon={<PlusOutlined />}
+              size="small"
+              onClick={() => handleServingsChange(true)}
+            />
           </div>
         </div>
         <div className={styles.infoItem}>
-          <span className={styles.infoLabel}>🥄 Ingredients: {recipe.ingredients?.length || 0}</span>
+          <span className={styles.infoLabel}>
+            🥄 Ingredients: {recipe.ingredients?.length || 0}
+          </span>
         </div>
       </div>
       <Divider className={styles.divider} />
@@ -423,7 +540,8 @@ const DetailRecipe = () => {
             {scaledIngredients && scaledIngredients.length > 0 ? (
               scaledIngredients.map((ingredient, index) => (
                 <li key={index}>
-                  {ingredient.ingredient_name} - {ingredient.amount} {ingredient.unit || ""}
+                  {ingredient.ingredient_name} - {ingredient.amount}{" "}
+                  {ingredient.unit || ""}
                 </li>
               ))
             ) : (
@@ -446,7 +564,10 @@ const DetailRecipe = () => {
             className={styles.writeReviewButton}
             onClick={handleWriteReview}
           >
-            <span role="img" aria-label="edit">✍️</span> WRITE A REVIEW
+            <span role="img" aria-label="edit">
+              ✍️
+            </span>{" "}
+            WRITE A REVIEW
           </Button>
         </div>
 
@@ -467,7 +588,11 @@ const DetailRecipe = () => {
             )}
             <TextArea
               rows={4}
-              placeholder={parentReviewId === null ? "Write your review here..." : "Write your reply here..."}
+              placeholder={
+                parentReviewId === null
+                  ? "Write your review here..."
+                  : "Write your reply here..."
+              }
               value={reviewText}
               onChange={(e) => setReviewText(e.target.value)}
               className={styles.reviewInput}
@@ -477,9 +602,17 @@ const DetailRecipe = () => {
 
         {loadingReviews ? (
           <div className={styles.skeletonReviewsSection}>
-            <Skeleton active title={{ width: '20%' }} paragraph={false} />
-            <Skeleton active avatar paragraph={{ rows: 2, width: ['80%', '60%'] }} />
-            <Skeleton active avatar paragraph={{ rows: 2, width: ['80%', '60%'] }} />
+            <Skeleton active title={{ width: "20%" }} paragraph={false} />
+            <Skeleton
+              active
+              avatar
+              paragraph={{ rows: 2, width: ["80%", "60%"] }}
+            />
+            <Skeleton
+              active
+              avatar
+              paragraph={{ rows: 2, width: ["80%", "60%"] }}
+            />
           </div>
         ) : errorReviews ? (
           <p>Error loading reviews: {errorReviews}</p>

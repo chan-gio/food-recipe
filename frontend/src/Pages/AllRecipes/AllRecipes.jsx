@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Row,
   Col,
@@ -6,14 +6,15 @@ import {
   Input,
   Select,
   Pagination,
-  Spin,
+  Skeleton,
   Empty,
   Image,
 } from "antd";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { recipeService } from "../../services/recipeService";
 import { categoryService } from "../../services/categoryService";
 import { ingredientService } from "../../services/ingredientService";
+import debounce from "lodash.debounce";
 import styles from "./AllRecipes.module.scss";
 
 const { Search } = Input;
@@ -34,6 +35,16 @@ const AllRecipes = () => {
     category: [],
     ingredient: [],
   });
+  const [searchInput, setSearchInput] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Đọc query parameter "search" khi component mount
+  useEffect(() => {
+    const searchQuery = searchParams.get("search") || "";
+    setFilters((prev) => ({ ...prev, search: searchQuery }));
+    setSearchInput(searchQuery);
+    setPagination((prev) => ({ ...prev, current: 1 }));
+  }, [searchParams]);
 
   // Fetch categories and ingredients on mount
   useEffect(() => {
@@ -41,8 +52,20 @@ const AllRecipes = () => {
       try {
         const categoryData = await categoryService.getCategories();
         const ingredientData = await ingredientService.getIngredients();
+
+        // Loại bỏ ingredients trùng lặp dựa trên ingredient_name
+        const uniqueIngredients = [];
+        const seenNames = new Set();
+        (ingredientData.data || []).forEach((ingredient) => {
+          const nameLower = ingredient.ingredient_name.toLowerCase();
+          if (!seenNames.has(nameLower)) {
+            seenNames.add(nameLower);
+            uniqueIngredients.push(ingredient);
+          }
+        });
+
         setCategories(categoryData.data || []);
-        setIngredients(ingredientData.data || []);
+        setIngredients(uniqueIngredients);
       } catch (error) {
         console.error("Error fetching filters:", error);
       }
@@ -56,8 +79,15 @@ const AllRecipes = () => {
       setLoading(true);
       try {
         let response;
-        if (filters.category.length > 0 || filters.ingredient.length > 0) {
-          // Use filterRecipes for category or ingredient filters
+        if (filters.search) {
+          response = await recipeService.searchRecipesByName(filters.search, {
+            page: pagination.current,
+            limit: pagination.pageSize,
+          });
+        } else if (
+          filters.category.length > 0 ||
+          filters.ingredient.length > 0
+        ) {
           response = await recipeService.filterRecipes({
             categoryIds:
               filters.category.length > 0 ? filters.category : undefined,
@@ -67,11 +97,9 @@ const AllRecipes = () => {
             limit: pagination.pageSize,
           });
         } else {
-          // Use getRecipes for search or no filters
           response = await recipeService.getRecipes({
             page: pagination.current,
             limit: pagination.pageSize,
-            search: filters.search,
           });
         }
         setRecipes(response.data || []);
@@ -90,24 +118,60 @@ const AllRecipes = () => {
     fetchRecipes();
   }, [pagination.current, pagination.pageSize, filters]);
 
+  // Debounce hàm cập nhật filters.search
+  const debouncedSearch = useMemo(
+    () =>
+      debounce((value) => {
+        setFilters((prev) => ({ ...prev, search: value }));
+        setPagination((prev) => ({ ...prev, current: 1 }));
+        setSearchParams(value.trim() ? { search: value.trim() } : {});
+      }, 1000),
+    [setSearchParams]
+  );
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setSearchInput(value);
+    debouncedSearch(value);
+  };
+
   const handleSearch = (value) => {
-    setFilters({ ...filters, search: value });
-    setPagination({ ...pagination, current: 1 });
+    setSearchInput(value);
+    setFilters((prev) => ({ ...prev, search: value }));
+    setPagination((prev) => ({ ...prev, current: 1 }));
+    setSearchParams(value.trim() ? { search: value.trim() } : {});
+    debouncedSearch.cancel();
   };
 
   const handleCategoryChange = (value) => {
-    setFilters({ ...filters, category: value });
-    setPagination({ ...pagination, current: 1 });
+    setFilters((prev) => ({ ...prev, category: value }));
+    setPagination((prev) => ({ ...prev, current: 1 }));
   };
 
   const handleIngredientChange = (value) => {
-    setFilters({ ...filters, ingredient: value });
-    setPagination({ ...pagination, current: 1 });
+    setFilters((prev) => ({ ...prev, ingredient: value }));
+    setPagination((prev) => ({ ...prev, current: 1 }));
   };
 
   const handlePaginationChange = (page, pageSize) => {
-    setPagination({ ...pagination, current: page, pageSize });
+    setPagination((prev) => ({ ...pagination, current: page, pageSize }));
   };
+
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [debouncedSearch]);
+
+  // Component skeleton cho mỗi card
+  const RecipeSkeleton = () => (
+    <Col xs={24} sm={12} md={6}>
+      <Card className={styles.recipeCard}>
+        <Skeleton.Image active style={{ width: 200, height: 150 }} />
+        <Skeleton active paragraph={false} style={{ marginTop: 12 }} />
+      </Card>
+    </Col>
+  );
 
   return (
     <div className={styles.container}>
@@ -121,7 +185,10 @@ const AllRecipes = () => {
               <Search
                 placeholder="Search recipes..."
                 onSearch={handleSearch}
+                value={searchInput}
+                onChange={handleInputChange}
                 allowClear
+                loading={loading}
                 className={styles.searchInput}
               />
             </div>
@@ -173,7 +240,11 @@ const AllRecipes = () => {
           <div className={styles.recipeList}>
             <h2>All Recipes</h2>
             {loading ? (
-              <Spin size="large" className={styles.spinner} />
+              <Row gutter={[16, 16]}>
+                {Array.from({ length: 8 }).map((_, index) => (
+                  <RecipeSkeleton key={index} />
+                ))}
+              </Row>
             ) : recipes.length === 0 ? (
               <Empty description="No recipes found" />
             ) : (

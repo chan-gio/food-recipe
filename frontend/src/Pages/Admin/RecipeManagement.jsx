@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button, message, Input, Space } from "antd";
-import { recipeService } from "../../services/recipeService"; // Adjust the import path as needed
-import AdminRecipeModal from "../../components/Modal/AdminRecipeModal"; // Import the new modal component
+import { Table, Button, Input, Space } from "antd";
+import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
+import { recipeService } from "../../services/recipeService";
+import AdminRecipeModal from "../../components/Modal/AdminRecipeModal";
+import { toastSuccess, toastError } from "../../utils/toastNotifier"; // Adjusted import path
 import "./RecipeManagement.module.scss";
 
 const { Search } = Input;
@@ -11,6 +13,7 @@ const RecipeManagement = () => {
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const navigate = useNavigate(); // Initialize navigate
 
   // Fetch recipes on component mount
   useEffect(() => {
@@ -28,7 +31,7 @@ const RecipeManagement = () => {
         setRecipes(response.data);
       }
     } catch (error) {
-      message.error(error.message);
+      toastError(error.message);
     } finally {
       setLoading(false);
     }
@@ -43,10 +46,10 @@ const RecipeManagement = () => {
   const handleDelete = async (recipeId) => {
     try {
       await recipeService.deleteRecipe(recipeId);
-      message.success("Recipe deleted successfully");
-      fetchRecipes(); // Refresh the table
+      toastSuccess("Recipe deleted successfully");
+      fetchRecipes();
     } catch (error) {
-      message.error(error.message);
+      toastError(error.message);
     }
   };
 
@@ -54,6 +57,11 @@ const RecipeManagement = () => {
   const handleView = (recipe) => {
     setSelectedRecipe(recipe);
     setIsModalVisible(true);
+  };
+
+  // Handle manage reviews
+  const handleManageReviews = (recipeId) => {
+    navigate(`/admin/reviews/${recipeId}`); // Navigate to ReviewManagement page
   };
 
   const handleModalClose = () => {
@@ -64,24 +72,29 @@ const RecipeManagement = () => {
   // Define table columns
   const columns = [
     {
-      title: "ID",
-      dataIndex: "recipe_id",
-      key: "recipe_id",
-    },
-    {
       title: "Recipe Name",
       dataIndex: "recipe_name",
       key: "recipe_name",
     },
     {
-      title: "Description",
-      dataIndex: "description",
-      key: "description",
+      title: "Created At",
+      dataIndex: "created_at",
+      key: "created_at",
+      render: (text) =>
+        new Date(text).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        }),
     },
     {
-      title: "Recipe Type",
-      dataIndex: "recipe_type",
-      key: "recipe_type",
+      title: "Categories",
+      dataIndex: "categories",
+      key: "categories",
+      render: (categories) =>
+        categories.length > 0
+          ? categories.map((cat) => cat.category_name).join(", ")
+          : "None",
     },
     {
       title: "Action",
@@ -96,6 +109,12 @@ const RecipeManagement = () => {
             onClick={() => handleDelete(record.recipe_id)}
           >
             DELETE
+          </Button>
+          <Button
+            className="reviews-button"
+            onClick={() => handleManageReviews(record.recipe_id)}
+          >
+            MANAGE REVIEWS
           </Button>
         </Space>
       ),

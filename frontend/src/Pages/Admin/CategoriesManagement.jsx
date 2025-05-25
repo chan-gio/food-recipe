@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button, message, Input, Space, Image } from "antd";
-import { categoryService } from "../../services/categoryService"; // Adjust the import path as needed
+import { Table, Button, Input, Space, Skeleton } from "antd";
+import { categoryService } from "../../services/categoryService";
+import { toastSuccess, toastError } from "../../utils/toastNotifier"; // Import toast utilities
 import "./CategoriesManagement.module.scss";
 
 const { Search } = Input;
@@ -38,7 +39,7 @@ const CategoriesManagement = () => {
         total: response.meta.total,
       });
     } catch (error) {
-      message.error(error.message);
+      toastError(error.message || "Failed to fetch categories"); // Use toastError
     } finally {
       setLoading(false);
     }
@@ -56,54 +57,32 @@ const CategoriesManagement = () => {
 
   // Handle search
   const handleSearch = (value) => {
-    fetchCategories(1, pagination.pageSize, value);
+    fetchCategories(1, pagination.pageSize, value.trim());
   };
 
   // Handle delete category
   const handleDelete = async (categoryId) => {
     try {
       await categoryService.deleteCategory(categoryId);
-      message.success("Category deleted successfully");
+      toastSuccess("Category deleted successfully"); // Use toastSuccess
       fetchCategories(pagination.current, pagination.pageSize);
     } catch (error) {
-      message.error(error.message);
+      toastError(error.message || "Failed to delete category"); // Use toastError
     }
   };
 
   // Define table columns
   const columns = [
     {
-      title: "ID",
-      dataIndex: "category_id",
-      key: "category_id",
-    },
-    {
       title: "Category Name",
       dataIndex: "category_name",
       key: "category_name",
     },
     {
-      title: "Images",
-      dataIndex: "images",
-      key: "images",
-      render: (images) => (
-        <Space>
-          {images && images.length > 0 ? (
-            images.map((img, index) => (
-              <Image
-                key={index}
-                src={img}
-                alt={`Category image ${index + 1}`}
-                width={50}
-                height={50}
-                style={{ objectFit: "cover" }}
-              />
-            ))
-          ) : (
-            <span>No images</span>
-          )}
-        </Space>
-      ),
+      title: "Recipe Count",
+      dataIndex: "recipeCount",
+      key: "recipeCount",
+      render: (count) => count || 0,
     },
     {
       title: "Action",
@@ -121,6 +100,42 @@ const CategoriesManagement = () => {
     },
   ];
 
+  // Skeleton row for table
+  const SkeletonRow = () => (
+    <tr>
+      <td>
+        <Skeleton active paragraph={false} title={{ width: 50 }} />
+      </td>
+      <td>
+        <Skeleton active paragraph={false} title={{ width: 150 }} />
+      </td>
+      <td>
+        <Skeleton active paragraph={false} title={{ width: 100 }} />
+      </td>
+      <td>
+        <Skeleton.Button active />
+      </td>
+    </tr>
+  );
+
+  // Skeleton table
+  const SkeletonTable = () => (
+    <table className="ant-table">
+      <thead className="ant-table-thead">
+        <tr>
+          {columns.map((col) => (
+            <th key={col.key}>{col.title}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody className="ant-table-tbody">
+        {Array.from({ length: pagination.pageSize }).map((_, index) => (
+          <SkeletonRow key={index} />
+        ))}
+      </tbody>
+    </table>
+  );
+
   return (
     <div className="categories-management">
       <div className="header">
@@ -132,19 +147,22 @@ const CategoriesManagement = () => {
           allowClear
         />
       </div>
-      <Table
-        dataSource={categories}
-        columns={columns}
-        rowKey="category_id"
-        loading={loading}
-        pagination={{
-          current: pagination.current,
-          pageSize: pagination.pageSize,
-          total: pagination.total,
-          showSizeChanger: true,
-        }}
-        onChange={handleTableChange}
-      />
+      {loading ? (
+        <SkeletonTable />
+      ) : (
+        <Table
+          dataSource={categories}
+          columns={columns}
+          rowKey="category_id"
+          pagination={{
+            current: pagination.current,
+            pageSize: pagination.pageSize,
+            total: pagination.total,
+            showSizeChanger: true,
+          }}
+          onChange={handleTableChange}
+        />
+      )}
     </div>
   );
 };

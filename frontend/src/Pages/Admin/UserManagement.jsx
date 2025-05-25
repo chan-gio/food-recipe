@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button, message, Input, Space, Form } from "antd";
-import { userService } from "../../services/userService"; // Adjust the import path as needed
-import AdminUserModal from "../../components/Modal/AdminUserModal"; // Import the new modal component
-import "./UserManagement.module.scss"; // Update to .scss to match naming convention
+import { Table, Button, Input, Space, Form } from "antd";
+import { userService } from "../../services/userService";
+import AdminUserModal from "../../components/Modal/AdminUserModal";
+import { toastSuccess, toastError } from "../../utils/toastNotifier"; // Import toast utilities
+import "./UserManagement.module.scss";
 
 const { Search } = Input;
 
@@ -18,18 +19,26 @@ const UserManagement = () => {
     total: 0,
   });
 
-  // Fetch users on component mount or when pagination/search changes
+  // Fetch users or search users based on query
   const fetchUsers = async (page = 1, pageSize = 10, searchQuery = "") => {
     setLoading(true);
     try {
-      const params = {
-        page,
-        limit: pageSize,
-      };
+      let response;
+      const params = { page, limit: pageSize };
+
       if (searchQuery) {
-        params.signin_account = searchQuery;
+        // Use searchUsers for search queries
+        response = await userService.searchUsers({
+          full_name: searchQuery,
+          email: searchQuery,
+          page,
+          limit: pageSize,
+        });
+      } else {
+        // Use getUsers for regular fetching
+        response = await userService.getUsers(params);
       }
-      const response = await userService.getUsers(params);
+
       setUsers(response.data);
       setPagination({
         current: response.meta.page,
@@ -37,7 +46,7 @@ const UserManagement = () => {
         total: response.meta.total,
       });
     } catch (error) {
-      message.error(error.message);
+      toastError(error.message || "Failed to fetch users"); // Use toastError
     } finally {
       setLoading(false);
     }
@@ -55,17 +64,17 @@ const UserManagement = () => {
 
   // Handle search
   const handleSearch = (value) => {
-    fetchUsers(1, pagination.pageSize, value);
+    fetchUsers(1, pagination.pageSize, value.trim());
   };
 
   // Handle delete user
   const handleDelete = async (userId) => {
     try {
       await userService.deleteUser(userId);
-      message.success("User deleted successfully");
+      toastSuccess("User deleted successfully"); // Use toastSuccess
       fetchUsers(pagination.current, pagination.pageSize);
     } catch (error) {
-      message.error(error.message);
+      toastError(error.message || "Failed to delete user"); // Use toastError
     }
   };
 
@@ -97,25 +106,26 @@ const UserManagement = () => {
         role: values.role,
       };
       await userService.updateUser(selectedUser.user_id, userData);
-      message.success("User updated successfully");
+      toastSuccess("User updated successfully"); // Use toastSuccess
       handleModalClose();
       fetchUsers(pagination.current, pagination.pageSize);
     } catch (error) {
-      message.error(error.message || "Failed to update user");
+      toastError(error.message || "Failed to update user"); // Use toastError
     }
   };
 
   // Define table columns
   const columns = [
     {
-      title: "ID",
-      dataIndex: "user_id",
-      key: "user_id",
-    },
-    {
       title: "Username",
       dataIndex: "signin_account",
       key: "signin_account",
+    },
+    {
+      title: "Full Name",
+      dataIndex: "full_name",
+      key: "full_name",
+      render: (text) => text || "N/A",
     },
     {
       title: "Email",
@@ -146,7 +156,7 @@ const UserManagement = () => {
       <div className="header">
         <h2>Admin Users</h2>
         <Search
-          placeholder="Search users by username"
+          placeholder="Search users by username or email"
           onSearch={handleSearch}
           style={{ width: 300 }}
           allowClear
