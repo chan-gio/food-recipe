@@ -495,7 +495,7 @@ const DetailRecipe = () => {
                 PHOTO BY {recipe.user?.signin_account || "Unknown"}
               </div>
             </div>
-            {recipe.videos && recipe.videos.length > 0 && (
+            {recipe.videos && recipe.videos.length > 0 ? (
               <div className={styles.videoContainer}>
                 {recipe.videos.map((video, index) => (
                   <video key={index} controls className={styles.video}>
@@ -504,13 +504,7 @@ const DetailRecipe = () => {
                   </video>
                 ))}
               </div>
-            ) : (
-              <img
-                src="https://via.placeholder.com/600x400"
-                alt="Placeholder"
-                className={styles.mainImage}
-              />
-            )}
+            ) : null}
           
           <Divider className={styles.divider} />
         </div>
