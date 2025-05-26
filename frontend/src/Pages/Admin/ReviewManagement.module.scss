@@ -1,66 +1,68 @@
-.reviewManagement {
-  padding: 20px !important;
+:global {
+  .review-management {
+    padding: 20px !important;
 
-  .header {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    margin-bottom: 20px !important;
+    .header {
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      margin-bottom: 20px !important;
 
-    h2 {
-      margin: 0 !important;
-      font-size: 24px !important;
-      font-weight: 600 !important;
-      color: #333 !important;
-    }
-  }
-
-  .card {
-    border-radius: 8px !important;
-    overflow: hidden !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
-  }
-
-  .ant-table {
-    border-radius: 8px !important;
-    overflow: hidden !important;
-
-    .ant-table-thead > tr > th {
-      background-color: #f0f2f5 !important;
-      font-weight: 600 !important;
-    }
-
-    .ant-table-tbody > tr > td {
-      .ant-typography-secondary {
-        color: #888 !important;
-        font-style: italic !important;
+      h2 {
+        margin: 0 !important;
+        font-size: 24px !important;
+        font-weight: 600 !important;
+        color: #333 !important;
       }
     }
 
-    :global(.ant-btn) {
-      background-color: #dc3545 !important;
+    .card {
+      border-radius: 8px !important;
+      overflow: hidden !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .ant-table {
+      border-radius: 8px !important;
+      overflow: hidden !important;
+
+      .ant-table-thead > tr > th {
+        background-color: #f0f2f5 !important;
+        font-weight: 600 !important;
+      }
+
+      .ant-table-tbody > tr > td {
+        .ant-typography-secondary {
+          color: #888 !important;
+          font-style: italic !important;
+        }
+      }
+
+      .delete-button {
+        background-color: #dc3545 !important;
+        color: white !important;
+        border: none !important;
+
+        &:hover {
+          background-color: #c82333 !important;
+        }
+      }
+
+      .action-buttons {
+        display: flex !important;
+        justify-content: center !important;
+        gap: 8px !important;
+      }
+    }
+
+    .back-button {
+      background-color: #6c757d !important;
       color: white !important;
       border: none !important;
 
       &:hover {
-        background-color: #c82333 !important;
+        background-color: #5a6268 !important;
       }
-    }
-
-    :global(.actionButtons) {
-      display: flex !important;
-      justify-content: center !important;
-      gap: 8px !important;
-    }
-  }
-
-  .backButton {
-    background-color: #6c757d !important;
-    color: white !important;
-    border: none !important;
-
-    &:hover {
-      background-color: #5a6268 !important;
     }
   }
 }

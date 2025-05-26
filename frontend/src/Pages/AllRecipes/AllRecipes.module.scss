@@ -14,7 +14,7 @@
 
 .filterSection {
   margin-bottom: 24px;
-
+  border
   h3 {
     margin-bottom: 8px;
     font-size: 16px;
@@ -30,6 +30,14 @@ padding-right: 30px !important;
 .selectInput {
   width: 100% !important; /* Ensure consistent width */
   max-width: 100%;
+  border-color: #ff6600;
+}
+
+:global(.ant-select-selector){
+  border-color: #ff6600 !important;
+  &.hover{
+     border-color: #ff6600 !important;
+  }
 }
 
 .recipeList {
@@ -94,4 +102,18 @@ padding-right: 30px !important;
 .pagination {
   margin-top: 24px;
   text-align: right;
+}
+
+:global(.ant-pagination-item-active){
+   border-color: #ff6600 !important;
+  &.hover{
+     border-color: #ff6600 !important;
+  }
+  .a{
+    color:#333;
+  }
+}
+
+:global(.ant-pagination-item-active a){
+  color:#333 !important;
 }

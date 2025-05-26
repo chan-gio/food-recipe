@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Input, Space } from "antd";
-import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
+import { useNavigate } from "react-router-dom";
 import { recipeService } from "../../services/recipeService";
 import AdminRecipeModal from "../../components/Modal/AdminRecipeModal";
-import { toastSuccess, toastError } from "../../utils/toastNotifier"; // Adjusted import path
+import { toastSuccess, toastError } from "../../utils/toastNotifier";
 import "./RecipeManagement.module.scss";
 
 const { Search } = Input;
@@ -13,9 +13,8 @@ const RecipeManagement = () => {
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
-  const navigate = useNavigate(); // Initialize navigate
+  const navigate = useNavigate();
 
-  // Fetch recipes on component mount
   useEffect(() => {
     fetchRecipes();
   }, []);
@@ -37,12 +36,10 @@ const RecipeManagement = () => {
     }
   };
 
-  // Handle search
   const handleSearch = (value) => {
     fetchRecipes(value);
   };
 
-  // Handle delete recipe
   const handleDelete = async (recipeId) => {
     try {
       await recipeService.deleteRecipe(recipeId);
@@ -53,15 +50,13 @@ const RecipeManagement = () => {
     }
   };
 
-  // Handle view recipe
   const handleView = (recipe) => {
     setSelectedRecipe(recipe);
     setIsModalVisible(true);
   };
 
-  // Handle manage reviews
   const handleManageReviews = (recipeId) => {
-    navigate(`/admin/reviews/${recipeId}`); // Navigate to ReviewManagement page
+    navigate(`/admin/reviews/${recipeId}`);
   };
 
   const handleModalClose = () => {
@@ -69,12 +64,12 @@ const RecipeManagement = () => {
     setSelectedRecipe(null);
   };
 
-  // Define table columns
   const columns = [
     {
       title: "Recipe Name",
       dataIndex: "recipe_name",
       key: "recipe_name",
+      render: (text) => <span className="truncate-text">{text}</span>, // Thêm class truncate-text
     },
     {
       title: "Created At",
@@ -91,10 +86,13 @@ const RecipeManagement = () => {
       title: "Categories",
       dataIndex: "categories",
       key: "categories",
-      render: (categories) =>
-        categories.length > 0
-          ? categories.map((cat) => cat.category_name).join(", ")
-          : "None",
+      render: (categories) => (
+        <span className="truncate-text">
+          {categories.length > 0
+            ? categories.map((cat) => cat.category_name).join(", ")
+            : "None"}
+        </span>
+      ), // Thêm class truncate-text
     },
     {
       title: "Action",

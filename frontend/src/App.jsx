@@ -7,25 +7,25 @@ import {
 import { Routes } from "./Routers/allrouters";
 import AdminLayout from "./components/Layout/AdminLayout"; // Import the new AdminLayout
 import Layout from "./components/Layout/Layout";
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const App = () => {
   return (
     <Router>
       <ToastContainer
-            position="top-right"
-            autoClose={3000}
-            hideProgressBar={false}
-            newestOnTop
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-            theme="light"
-            progressStyle={{ background: '#5f2eea' }}
-          />
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        progressStyle={{ background: "#5f2eea" }}
+      />
       <Suspense fallback={<div>Loading...</div>}>
         <Switch>
           {Routes.map(({ path, component, children }, index) => {
@@ -71,12 +71,7 @@ const App = () => {
           />
         </Switch>
       </Suspense>
-
-
-
     </Router>
-
-    
   );
 };
 

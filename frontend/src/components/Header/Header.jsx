@@ -5,7 +5,6 @@ import logo from "../../assets/image/logo.svg";
 import {
   HomeOutlined,
   UserOutlined,
-  LoginOutlined,
   SearchOutlined,
   BookOutlined,
 } from "@ant-design/icons";
@@ -41,9 +40,6 @@ const CustomHeader = () => {
         </Menu.Item>
         <Menu.Item key="2" icon={<UserOutlined />}>
           <Link to="/profile">Profile</Link>
-        </Menu.Item>
-        <Menu.Item key="3" icon={<LoginOutlined />}>
-          <Link to="/login">Login</Link>
         </Menu.Item>
         <Menu.Item key="4" icon={<BookOutlined />}>
           <Link to="/allrecipes">Recipes</Link>

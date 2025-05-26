@@ -251,7 +251,7 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  padding: 12px; /* Giảm padding để thu nhỏ */
+  padding: 12px;
   border-radius: 10px;
   background: #ffffff;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
@@ -291,7 +291,7 @@
   margin-bottom: 10px;
 
   h3 {
-    font-size: 1.1rem; /* Thu nhỏ font */
+    font-size: 1.1rem;
     margin-bottom: 6px;
     display: flex;
     flex-direction: column;
@@ -302,7 +302,7 @@
   }
 
   p {
-    font-size: 0.9rem; /* Thu nhỏ font */
+    font-size: 0.9rem;
     margin-bottom: 6px;
     padding: 8px;
     border-radius: 6px;
@@ -326,7 +326,7 @@
   }
 
   .timestamp {
-    font-size: 0.8rem; /* Thu nhỏ font */
+    font-size: 0.8rem;
     color: #6b7280;
     font-style: italic;
   }
@@ -402,4 +402,44 @@
 .skeletonFavoriteRecipesSection,
 .skeletonCommentsSection {
   padding: 30px;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  background: #ffffff;
+  border-radius: 16px;
+
+  h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 20px 0;
+    text-align: center;
+  }
+}
+
+.emptyIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background: #f1f5f9;
+  border-radius: 50%;
+  transition: background 0.3s ease;
+
+  &:hover {
+    background: #ff6600;
+    svg {
+      color: #ffffff;
+    }
+  }
+}
+
+.emptyAction {
+  margin-top: 20px;
 }

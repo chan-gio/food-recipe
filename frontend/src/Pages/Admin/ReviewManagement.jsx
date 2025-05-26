@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Table, Button, Space, Card, Rate, Typography } from "antd";
 import { reviewService } from "../../services/reviewService";
 import { toastSuccess, toastError } from "../../utils/toastNotifier";
-import styles from "./ReviewManagement.module.scss";
+import "./ReviewManagement.module.scss"; // Giữ import SCSS giống RecipeManagement
 
 const { Title, Text } = Typography;
 
@@ -93,9 +93,9 @@ const ReviewManagement = () => {
       title: "Action",
       key: "action",
       render: (_, record) => (
-        <Space className={styles.actionButtons}>
+        <Space className="action-buttons">
           <Button
-            className={styles.deleteButton}
+            className="delete-button"
             onClick={() => handleDelete(record.review_id)}
           >
             DELETE
@@ -106,17 +106,17 @@ const ReviewManagement = () => {
   ];
 
   return (
-    <div className={styles.reviewManagement}>
-      <Space className={styles.header}>
+    <div className="review-management">
+      <div className="header">
         <Title level={2}>Manage Reviews for Recipe ID: {recipeId}</Title>
         <Button
-          className={styles.backButton}
+          className="back-button"
           onClick={() => navigate("/admin/recipes")}
         >
           Back to Recipes
         </Button>
-      </Space>
-      <Card className={styles.card}>
+      </div>
+      <Card className="card">
         <Table
           dataSource={flattenedReviews}
           columns={columns}

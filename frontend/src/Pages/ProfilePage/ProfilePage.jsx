@@ -7,6 +7,12 @@ import { favoriteService } from "../../services/favoriteService";
 import { reviewService } from "../../services/reviewService";
 import { userService } from "../../services/userService";
 import useAuth from "../../utils/auth";
+import {
+  UserOutlined,
+  FileTextOutlined,
+  HeartOutlined,
+  CommentOutlined,
+} from "@ant-design/icons";
 
 const ProfilePage = () => {
   const { isAuthenticated, userId, logout, isLoading } = useAuth();
@@ -238,6 +244,14 @@ const ProfilePage = () => {
     logout();
   };
 
+  const EmptyState = ({ icon, message, action }) => (
+    <div className={styles.emptyState}>
+      <div className={styles.emptyIcon}>{icon}</div>
+      <h3>{message}</h3>
+      {action && <div className={styles.emptyAction}>{action}</div>}
+    </div>
+  );
+
   const renderSection = () => {
     switch (activeSection) {
       case "profile":
@@ -258,7 +272,23 @@ const ProfilePage = () => {
                 <Skeleton.Button active block style={{ marginTop: "16px" }} />
               </div>
             ) : !profile ? (
-              <p>No profile data available</p>
+              <EmptyState
+                icon={
+                  <UserOutlined
+                    style={{ fontSize: "48px", color: "#ff6600" }}
+                  />
+                }
+                message="No profile data available"
+                action={
+                  <Button
+                    type="primary"
+                    className={styles.editButton}
+                    onClick={handleEditProfile}
+                  >
+                    Create Profile
+                  </Button>
+                }
+              />
             ) : (
               <>
                 <div className={styles.formGroup}>
@@ -326,7 +356,21 @@ const ProfilePage = () => {
                 <Skeleton.Button active block style={{ marginTop: "16px" }} />
               </div>
             ) : recipes.length === 0 ? (
-              <p>No recipes available</p>
+              <EmptyState
+                icon={
+                  <FileTextOutlined
+                    style={{ fontSize: "48px", color: "#ff6600" }}
+                  />
+                }
+                message="You haven't added any recipes yet"
+                action={
+                  <Link to="/recipeform">
+                    <Button type="primary" className={styles.addRecipeButton}>
+                      Add Your First Recipe
+                    </Button>
+                  </Link>
+                }
+              />
             ) : (
               <div className={styles.recipeList}>
                 {recipes.map((recipe) => (
@@ -354,22 +398,15 @@ const ProfilePage = () => {
                 ))}
               </div>
             )}
-            {recipeMeta && recipes.length > 0 && (
-              <Pagination
-                current={recipePage}
-                pageSize={limit}
-                total={recipeMeta.total}
-                onChange={(page) => setRecipePage(page)}
-                className={styles.pagination}
-              />
+            {(recipes.length > 0 || recipesLoading) && (
+              <div className={styles.addRecipeContainer}>
+                <Link to="/recipeform">
+                  <Button type="primary" className={styles.addRecipeButton}>
+                    Add Recipe
+                  </Button>
+                </Link>
+              </div>
             )}
-            <div className={styles.addRecipeContainer}>
-              <Link to="/recipeform">
-                <Button type="primary" className={styles.addRecipeButton}>
-                  Add Recipe
-                </Button>
-              </Link>
-            </div>
           </div>
         );
       case "favoriteRecipes":
@@ -390,7 +427,21 @@ const ProfilePage = () => {
                 />
               </div>
             ) : favorites.length === 0 ? (
-              <p>No favorite recipes available</p>
+              <EmptyState
+                icon={
+                  <HeartOutlined
+                    style={{ fontSize: "48px", color: "#ff6600" }}
+                  />
+                }
+                message="No favorite recipes yet"
+                action={
+                  <Link to="/">
+                    <Button type="primary" className={styles.viewButton}>
+                      Explore Recipes
+                    </Button>
+                  </Link>
+                }
+              />
             ) : (
               <div className={styles.recipeList}>
                 {favorites.map((favorite) => (
@@ -444,7 +495,21 @@ const ProfilePage = () => {
                 />
               </div>
             ) : comments.length === 0 ? (
-              <p>No comments available</p>
+              <EmptyState
+                icon={
+                  <CommentOutlined
+                    style={{ fontSize: "48px", color: "#ff6600" }}
+                  />
+                }
+                message="No comments added yet"
+                action={
+                  <Link to="/">
+                    <Button type="primary" className={styles.viewButton}>
+                      Find Recipes to Comment
+                    </Button>
+                  </Link>
+                }
+              />
             ) : (
               <div className={styles.recipeList}>
                 {comments.map((comment) => (
@@ -452,7 +517,7 @@ const ProfilePage = () => {
                     <div className={styles.recipeContent}>
                       <h3>
                         <strong>Recipe Name: </strong>
-                        <Link to={`/detail/${comment.recipe_id}`}>
+                        <Link to={`/detail/${comment.recipe.recipe_id}`}>
                           {comment.recipe.recipe_name}
                         </Link>
                       </h3>
@@ -465,7 +530,7 @@ const ProfilePage = () => {
                       </span>
                     </div>
                     <div className={styles.recipeActions}>
-                      <Link to={`/detail/${comment.recipe_id}`}>
+                      <Link to={`/detail/${comment.recipe.recipe_id}`}>
                         <Button className={styles.viewButton}>
                           View Recipe
                         </Button>
@@ -526,7 +591,12 @@ const ProfilePage = () => {
               <Skeleton active paragraph={{ rows: 1, width: ["30%"] }} />
             </div>
           ) : !profile ? (
-            <p>No profile data</p>
+            <EmptyState
+              icon={
+                <UserOutlined style={{ fontSize: "48px", color: "#ff6600" }} />
+              }
+              message="No profile data available"
+            />
           ) : (
             <>
               <div

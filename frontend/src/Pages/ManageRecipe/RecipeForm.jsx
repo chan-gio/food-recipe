@@ -786,38 +786,24 @@ const RecipeForm = () => {
             </Form.Item>
           </div>
 
-          <Divider className={styles.divider} />
-
           <div className={styles.section}>
-            <div className={styles.infoSection}>
-              <div className={styles.infoItem}>
-                <span className={styles.infoLabel}>
-                  🕒 Ready in:
-                  <Form.Item name="cook_time" noStyle>
-                    <InputNumber min={0} className={styles.infoInput} />
-                  </Form.Item>
-                  mins
-                </span>
-              </div>
-              <div className={styles.infoItem}>
-                <span className={styles.infoLabel}>
-                  🍽️ Serves:
-                  <Form.Item name="servings" noStyle>
-                    <InputNumber min={1} className={styles.infoInput} />
-                  </Form.Item>
-                </span>
-              </div>
-              <div className={styles.infoItem}>
-                <span className={styles.infoLabel}>
-                  🥄 Ingredients:
-                  {ingredients.length}
-                </span>
-              </div>
-            </div>
+            <Form.Item name="categories">
+              <Select
+                mode="tags"
+                placeholder="Select or type categories"
+                className={styles.categorySelect}
+                onSearch={fetchCategories}
+                onChange={handleCategoryChange}
+                onBlur={handleCategoryBlur}
+                filterOption={false}
+                options={categoryOptions}
+              />
+            </Form.Item>
           </div>
 
           <div className={styles.section}>
             <Space className={styles.actions}>
+              <Button icon={<BookOutlined />} disabled />
               <Button icon={<UploadOutlined />} disabled />
               <Button icon={<PrinterOutlined />} disabled />
               <Button

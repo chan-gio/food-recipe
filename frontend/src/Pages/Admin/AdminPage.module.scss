@@ -380,3 +380,21 @@
     }
   }
 }
+
+:global(.ant-pagination-item-active){
+   border-color: #333 !important;
+  &.hover{
+     border-color: #333 !important;
+  }
+}
+:global(.ant-select-selector){
+   border-color: #333 !important;
+  &.hover{
+     border-color: #333 !important;
+  }
+}
+
+
+:global(.ant-pagination-item-active a){
+  color:#333 !important;
+}

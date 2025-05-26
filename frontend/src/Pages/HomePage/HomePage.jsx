@@ -300,77 +300,77 @@ export default function HomePage() {
 
       {/* Main content */}
       <div className={styles.homeContainer}>
-        <div className={styles.categoryWrapper}>
-          {categoriesData.length > 0 ? (
-            <Slider
-              {...categorySettings}
-              ref={categorySliderRef}
-              className={styles.categoryCarousel}
-            >
-              {categoriesData.map((category, index) => (
-                <div
-                  key={category.category_id}
-                  className={styles.categoryItemWrapper}
-                  onClick={() =>
-                    handleCategoryClick(category.category_id, index)
-                  }
-                >
-                  <span
-                    className={`${styles.categoryItem} ${
-                      category.category_id === selectedCategory
-                        ? styles.active
-                        : ""
-                    }`}
+        {categoriesData.length > 0 && (
+          <>
+            <div className={styles.categoryWrapper}>
+              <Slider
+                {...categorySettings}
+                ref={categorySliderRef}
+                className={styles.categoryCarousel}
+              >
+                {categoriesData.map((category, index) => (
+                  <div
+                    key={category.category_id}
+                    className={styles.categoryItemWrapper}
+                    onClick={() =>
+                      handleCategoryClick(category.category_id, index)
+                    }
                   >
-                    {category.category_name}
-                  </span>
-                </div>
-              ))}
-            </Slider>
-          ) : (
-            <p className={styles.noCategoriesMessage}>
-              No categories with recipes available.
-            </p>
-          )}
-        </div>
+                    <span
+                      className={`${styles.categoryItem} ${
+                        category.category_id === selectedCategory
+                          ? styles.active
+                          : ""
+                      }`}
+                    >
+                      {category.category_name}
+                    </span>
+                  </div>
+                ))}
+              </Slider>
+            </div>
 
-        <div className={styles.carouselWrapper}>
-          <LeftOutlined
-            className={styles.arrow}
-            onClick={() => sliderRef.current?.slickPrev()}
-          />
-          <Slider
-            {...recipeSettings}
-            ref={sliderRef}
-            className={styles.carousel}
-          >
-            {selectedRecipes.map((recipe) => (
-              <div key={recipe.recipe_id}>
-                <Card
-                  hoverable
-                  onClick={() => handleRecipeClick(recipe.recipe_id)}
-                  cover={
-                    <img
-                      alt={recipe.recipe_name}
-                      src={recipe.images[0] || "/images/recipes/default.jpg"}
-                    />
-                  }
-                  className={styles.recipeCard}
-                >
-                  <Card.Meta
-                    title={recipe.recipe_name}
-                    description={recipe.description || ""}
-                  />
-                </Card>
-              </div>
-            ))}
-          </Slider>
-          <RightOutlined
-            className={styles.arrow}
-            onClick={() => sliderRef.current?.slickNext()}
-          />
-        </div>
-        <br />
+            <div className={styles.carouselWrapper}>
+              <LeftOutlined
+                className={styles.arrow}
+                onClick={() => sliderRef.current?.slickPrev()}
+              />
+              <Slider
+                {...recipeSettings}
+                ref={sliderRef}
+                className={styles.carousel}
+              >
+                {selectedRecipes.map((recipe) => (
+                  <div key={recipe.recipe_id}>
+                    <Card
+                      hoverable
+                      onClick={() => handleRecipeClick(recipe.recipe_id)}
+                      cover={
+                        <img
+                          alt={recipe.recipe_name}
+                          src={
+                            recipe.images[0] || "/images/recipes/default.jpg"
+                          }
+                        />
+                      }
+                      className={styles.recipeCard}
+                    >
+                      <Card.Meta
+                        title={recipe.recipe_name}
+                        description={recipe.description || ""}
+                      />
+                    </Card>
+                  </div>
+                ))}
+              </Slider>
+              <RightOutlined
+                className={styles.arrow}
+                onClick={() => sliderRef.current?.slickNext()}
+              />
+            </div>
+            <br />
+          </>
+        )}
 
         {/* Most Favorited Recipes Section */}
         <div className={styles.trendingRecipesSection}>

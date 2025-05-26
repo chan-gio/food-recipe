@@ -373,7 +373,7 @@
 
 .replyReview {
   background-color: #f0f7ff;
-  border-left: 4px solid #1890ff;
+  border-left: 4px solid #ff6347;
   margin-left: 24px;
 }
 
@@ -399,6 +399,9 @@
   color: #4a4a4a;
   line-height: 1.6;
   margin-bottom: 12px;
+  .ant-btn{
+    background: #ff6600;
+  }
 }
 
 .reviewFooter {
@@ -421,7 +424,7 @@
 .replyButton,
 .toggleRepliesButton {
   font-size: 14px;
-  color: #1890ff;
+  color: #ff6347 !important;
   padding: 0;
 }
 

@@ -661,6 +661,20 @@ const DetailRecipe = () => {
               onCancel={handleModalCancel}
               okText="Submit"
               cancelText="Cancel"
+              okButtonProps={{
+                style: {
+                  backgroundColor: "#ff6600", // Màu nền cho nút Submit
+                  borderColor: "#ff6600",
+                  color: "#fff", // Màu chữ
+                },
+              }}
+              cancelButtonProps={{
+                style: {
+                  backgroundColor: "#f5222d", // Màu nền cho nút Cancel
+                  borderColor: "#f5222d",
+                  color: "#fff",
+                },
+              }}
             >
               <div className={styles.reviewModal}>
                 {parentReviewId === null && (

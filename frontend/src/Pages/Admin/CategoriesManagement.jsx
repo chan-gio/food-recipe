@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Input, Space, Skeleton } from "antd";
 import { categoryService } from "../../services/categoryService";
-import { toastSuccess, toastError } from "../../utils/toastNotifier"; // Import toast utilities
+import { toastSuccess, toastError } from "../../utils/toastNotifier";
 import "./CategoriesManagement.module.scss";
 
 const { Search } = Input;
@@ -39,7 +39,7 @@ const CategoriesManagement = () => {
         total: response.meta.total,
       });
     } catch (error) {
-      toastError(error.message || "Failed to fetch categories"); // Use toastError
+      toastError(error.message || "Failed to fetch categories");
     } finally {
       setLoading(false);
     }
@@ -64,10 +64,10 @@ const CategoriesManagement = () => {
   const handleDelete = async (categoryId) => {
     try {
       await categoryService.deleteCategory(categoryId);
-      toastSuccess("Category deleted successfully"); // Use toastSuccess
+      toastSuccess("Category deleted successfully");
       fetchCategories(pagination.current, pagination.pageSize);
     } catch (error) {
-      toastError(error.message || "Failed to delete category"); // Use toastError
+      toastError(error.message || "Failed to delete category");
     }
   };
 
@@ -92,6 +92,7 @@ const CategoriesManagement = () => {
           <Button
             className="delete-button"
             onClick={() => handleDelete(record.category_id)}
+            disabled={record.recipeCount === 0} // Disable if recipeCount is 0
           >
             DELETE
           </Button>

@@ -54,24 +54,34 @@
   .ant-menu-item {
     font-size: 16px;
     transition: background-color 0.3s ease, color 0.3s ease;
+    padding: 0 20px; /* Adjust padding for better spacing */
 
     @media (max-width: 768px) {
       font-size: 14px;
+      padding: 0 15px;
+    }
+
+    &.ant-menu-item-selected,
+    &:hover,
+    &.ant-menu-item-active {
+      background-color: #ffffff33 !important;
+      color: #ffd700 !important;
+    }
+
+    .anticon {
+      font-size: 18px; /* Slightly larger icon for visibility */
+      margin-right: 8px;
+      vertical-align: middle;
+
+      @media (max-width: 768px) {
+        font-size: 16px;
+      }
     }
   }
 
-  .ant-menu-horizontal > .ant-menu-item-selected,
-  .ant-menu-horizontal > .ant-menu-item:hover,
-  .ant-menu-horizontal > .ant-menu-item-active {
-    background-color: #ffffff33 !important;
-  }
-
-  .ant-menu-item-selected,
   .ant-menu-item-selected a,
-  .ant-menu-item-selected .anticon,
-  .ant-menu-item:hover,
   .ant-menu-item:hover a,
-  .ant-menu-item:hover .anticon {
+  .ant-menu-item-active a {
     color: #ffd700 !important;
   }
 }

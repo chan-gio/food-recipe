@@ -1,7 +1,7 @@
 import React, { lazy } from "react";
 
 const Homepage = lazy(() => import("../Pages/HomePage/HomePage"));
-const ProfilePage = lazy(() => import("../Pages/ProfiePage/ProfilePage"));
+const ProfilePage = lazy(() => import("../Pages/ProfilePage/ProfilePage"));
 const LoginPage = lazy(() => import("../Pages/LoginPage/LoginPage"));
 const DetailRecipe = lazy(() => import("../Pages/DetailRecipe/DetailRecipe"));
 const RecipeForm = lazy(() => import("../Pages/ManageRecipe/RecipeForm"));
