@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import styles from "./ProfilePage.module.scss";
-import { Button, Card, Input, List, Pagination, Spin, Skeleton } from "antd";
+import { Button, Card, Input, Pagination, Spin, Skeleton } from "antd";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { recipeService } from "../../services/recipeService";
 import { favoriteService } from "../../services/favoriteService";
@@ -39,7 +39,7 @@ const ProfilePage = () => {
   useEffect(() => {
     if (isLoading) return;
     if (!isAuthenticated) {
-      navigate('/login');
+      navigate("/login");
     }
   }, [isAuthenticated, isLoading, navigate]);
 
@@ -162,6 +162,20 @@ const ProfilePage = () => {
     }
   };
 
+  const handleDeleteComment = async (commentId) => {
+    try {
+      await reviewService.deleteReview(commentId);
+      const response = await reviewService.getReviewsByUserId(userId, {
+        page: commentPage,
+        limit,
+      });
+      setComments(response.data);
+      setCommentMeta(response.meta);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   const handleAvatarClick = () => {
     fileInputRef.current.click();
   };
@@ -233,8 +247,14 @@ const ProfilePage = () => {
             {error && <p style={{ color: "red" }}>{error}</p>}
             {profileLoading ? (
               <div className={styles.skeletonProfileSection}>
-                <Skeleton.Input active style={{ width: "100%", marginBottom: "16px" }} />
-                <Skeleton.Input active style={{ width: "100%", marginBottom: "16px" }} />
+                <Skeleton.Input
+                  active
+                  style={{ width: "100%", marginBottom: "16px" }}
+                />
+                <Skeleton.Input
+                  active
+                  style={{ width: "100%", marginBottom: "16px" }}
+                />
                 <Skeleton.Button active block style={{ marginTop: "16px" }} />
               </div>
             ) : !profile ? (
@@ -264,23 +284,25 @@ const ProfilePage = () => {
                   className={styles.input}
                   disabled={!isEditingProfile}
                 />
-                {isEditingProfile ? (
-                  <Button
-                    type="primary"
-                    className={styles.saveButton}
-                    onClick={handleSaveProfile}
-                  >
-                    Save Profile
-                  </Button>
-                ) : (
-                  <Button
-                    type="primary"
-                    className={styles.saveButton}
-                    onClick={handleEditProfile}
-                  >
-                    Edit Profile
-                  </Button>
-                )}
+                <div className={styles.buttonContainer}>
+                  {isEditingProfile ? (
+                    <Button
+                      type="primary"
+                      className={styles.saveButton}
+                      onClick={handleSaveProfile}
+                    >
+                      Save Profile
+                    </Button>
+                  ) : (
+                    <Button
+                      type="primary"
+                      className={styles.saveButton}
+                      onClick={handleEditProfile}
+                    >
+                      Edit Profile
+                    </Button>
+                  )}
+                </div>
               </>
             )}
           </div>
@@ -293,8 +315,14 @@ const ProfilePage = () => {
             {recipesLoading ? (
               <div className={styles.skeletonMyRecipesSection}>
                 <Skeleton active title={{ width: "20%" }} paragraph={false} />
-                <Skeleton active paragraph={{ rows: 2, width: ["80%", "60%"] }} />
-                <Skeleton active paragraph={{ rows: 2, width: ["80%", "60%"] }} />
+                <Skeleton
+                  active
+                  paragraph={{ rows: 2, width: ["80%", "60%"] }}
+                />
+                <Skeleton
+                  active
+                  paragraph={{ rows: 2, width: ["80%", "60%"] }}
+                />
                 <Skeleton.Button active block style={{ marginTop: "16px" }} />
               </div>
             ) : recipes.length === 0 ? (
@@ -335,11 +363,13 @@ const ProfilePage = () => {
                 className={styles.pagination}
               />
             )}
-            <Link to="/recipeform">
-              <Button type="primary" className={styles.addRecipeButton}>
-                Add Recipe
-              </Button>
-            </Link>
+            <div className={styles.addRecipeContainer}>
+              <Link to="/recipeform">
+                <Button type="primary" className={styles.addRecipeButton}>
+                  Add Recipe
+                </Button>
+              </Link>
+            </div>
           </div>
         );
       case "favoriteRecipes":
@@ -350,8 +380,14 @@ const ProfilePage = () => {
             {favoritesLoading ? (
               <div className={styles.skeletonFavoriteRecipesSection}>
                 <Skeleton active title={{ width: "20%" }} paragraph={false} />
-                <Skeleton active paragraph={{ rows: 2, width: ["80%", "60%"] }} />
-                <Skeleton active paragraph={{ rows: 2, width: ["80%", "60%"] }} />
+                <Skeleton
+                  active
+                  paragraph={{ rows: 2, width: ["80%", "60%"] }}
+                />
+                <Skeleton
+                  active
+                  paragraph={{ rows: 2, width: ["80%", "60%"] }}
+                />
               </div>
             ) : favorites.length === 0 ? (
               <p>No favorite recipes available</p>
@@ -400,45 +436,51 @@ const ProfilePage = () => {
                 <Skeleton active title={{ width: "20%" }} paragraph={false} />
                 <Skeleton
                   active
-                  avatar
-                  paragraph={{ rows: 1, width: ["60%"] }}
+                  paragraph={{ rows: 2, width: ["80%", "60%"] }}
                 />
                 <Skeleton
                   active
-                  avatar
-                  paragraph={{ rows: 1, width: ["60%"] }}
+                  paragraph={{ rows: 2, width: ["80%", "60%"] }}
                 />
               </div>
             ) : comments.length === 0 ? (
               <p>No comments available</p>
             ) : (
-              <List
-                className={styles.commentList}
-                itemLayout="horizontal"
-                dataSource={comments}
-                renderItem={(item) => (
-                  <List.Item className={styles.commentItem}>
-                    <List.Item.Meta
-                      title={
-                        <span>
-                          On{" "}
-                          <Link to={`/detail/${item.recipe_id}`}>
-                            {item.recipe.recipe_name}
-                          </Link>
-                        </span>
-                      }
-                      description={
-                        <>
-                          <p>{item.comment}</p>
-                          <span className={styles.timestamp}>
-                            {new Date(item.created_at).toLocaleString()}
-                          </span>
-                        </>
-                      }
-                    />
-                  </List.Item>
-                )}
-              />
+              <div className={styles.recipeList}>
+                {comments.map((comment) => (
+                  <Card key={comment.review_id} className={styles.recipeCard}>
+                    <div className={styles.recipeContent}>
+                      <h3>
+                        <strong>Recipe Name: </strong>
+                        <Link to={`/detail/${comment.recipe_id}`}>
+                          {comment.recipe.recipe_name}
+                        </Link>
+                      </h3>
+                      <p>
+                        <strong>Comment: </strong>
+                        {comment.comment}
+                      </p>
+                      <span className={styles.timestamp}>
+                        {new Date(comment.created_at).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className={styles.recipeActions}>
+                      <Link to={`/detail/${comment.recipe_id}`}>
+                        <Button className={styles.viewButton}>
+                          View Recipe
+                        </Button>
+                      </Link>
+                      <Button
+                        danger
+                        onClick={() => handleDeleteComment(comment.review_id)}
+                        className={styles.deleteButton}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
             )}
             {commentMeta && comments.length > 0 && (
               <Pagination
@@ -475,7 +517,12 @@ const ProfilePage = () => {
           {profileLoading ? (
             <div className={styles.skeletonProfileCard}>
               <Skeleton.Avatar active size={100} shape="circle" />
-              <Skeleton active title={{ width: "50%" }} paragraph={false} style={{ marginTop: "16px" }} />
+              <Skeleton
+                active
+                title={{ width: "50%" }}
+                paragraph={false}
+                style={{ marginTop: "16px" }}
+              />
               <Skeleton active paragraph={{ rows: 1, width: ["30%"] }} />
             </div>
           ) : !profile ? (
@@ -550,11 +597,7 @@ const ProfilePage = () => {
           >
             Your Comments
           </NavLink>
-          <Button
-            danger
-            className={styles.logoutButton}
-            onClick={handleLogout}
-          >
+          <Button danger className={styles.logoutButton} onClick={handleLogout}>
             Logout
           </Button>
         </div>

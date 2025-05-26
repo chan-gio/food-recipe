@@ -1,15 +1,20 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react"; // Add useRef
+import { useNavigate } from "react-router-dom";
 import styles from "./Footer.module.scss";
-import logo from "../../assets/image/logo.svg"; // Ensure the path is correct
-import waveImg from "../../assets/image/svg.png"; // Ensure the path is correct
+import logo from "../../assets/image/logo.svg";
+import waveImg from "../../assets/image/svg.png";
 import {
   FaInstagram,
   FaFacebook,
   FaPinterest,
   FaYoutube,
-} from "react-icons/fa"; // For social media icons
+} from "react-icons/fa";
+import { recipeService } from "../../services/recipeService";
 
 const Footer = () => {
+  const navigate = useNavigate();
+  const searchInputRef = useRef(null); // Create a ref for the search input
+
   useEffect(() => {
     const navbar = document.querySelector(".navbar");
 
@@ -25,6 +30,34 @@ const Footer = () => {
 
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Handle search input
+  const handleSearch = async (event) => {
+    if (event.key === "Enter") {
+      const value = event.target.value.trim();
+      if (value) {
+        try {
+          // Call the searchRecipesByName service
+          await recipeService.searchRecipesByName(value);
+          // Navigate to allrecipes with search query
+          navigate(`/allrecipes?search=${encodeURIComponent(value)}`);
+        } catch (error) {
+          console.error("Search error:", error.message);
+          // Navigate even if search fails
+          navigate(`/allrecipes?search=${encodeURIComponent(value)}`);
+        }
+      } else {
+        // Navigate to allrecipes without query if search is empty
+        navigate("/allrecipes");
+      }
+      // Scroll to the top of the page
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      // Clear the search input
+      if (searchInputRef.current) {
+        searchInputRef.current.value = "";
+      }
+    }
+  };
 
   return (
     <footer className={styles.footer}>
@@ -55,7 +88,12 @@ const Footer = () => {
           <img src={logo} alt="Logo" />
           <div className={styles.searchBar}>
             <span className={styles.searchIcon}>🔍</span>
-            <input type="text" placeholder="Search Recipes..." />
+            <input
+              type="text"
+              placeholder="Search Recipes..."
+              onKeyDown={handleSearch}
+              ref={searchInputRef} // Attach the ref to the input
+            />
           </div>
           <div className={styles.socialIcons}>
             <a href="#">

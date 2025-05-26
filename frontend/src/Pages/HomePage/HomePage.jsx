@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
 import styles from "./HomePage.module.scss";
-import { Card, Avatar, Spin, Alert } from "antd";
+import { Card, Avatar, Skeleton, Alert } from "antd";
 import Slider from "react-slick";
 import { LeftOutlined, RightOutlined, UserOutlined } from "@ant-design/icons";
 import "slick-carousel/slick/slick.css";
@@ -9,12 +9,12 @@ import "slick-carousel/slick/slick-theme.css";
 import { recipeService } from "../../services/recipeService";
 import { categoryService } from "../../services/categoryService";
 
-const bannerImage = "/images/banner.jpg";
+import bannerImage from "../../assets/image/banner.png"; // Adjust path based on your folder structure
 
 export default function HomePage() {
   const sliderRef = useRef(null);
   const categorySliderRef = useRef(null);
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [categoriesData, setCategoriesData] = useState([]);
   const [topUsers, setTopUsers] = useState([]);
@@ -29,15 +29,21 @@ export default function HomePage() {
       setError(null);
 
       try {
-        const categoriesResponse = await categoryService.getCategories({ page: 1, limit: 10 });
-        const fetchedCategoriesData = categoriesResponse.data;
+        const categoriesResponse = await categoryService.getCategories({
+          page: 1,
+          limit: 10,
+        });
+        const fetchedCategoriesData = categoriesResponse.data.filter(
+          (category) => category.recipeCount > 0
+        );
         setCategoriesData(fetchedCategoriesData);
 
         if (fetchedCategoriesData.length > 0) {
           setSelectedCategory(fetchedCategoriesData[0].category_id);
         }
 
-        const mostFavoritedResponse = await recipeService.getMostFavoritedRecipes();
+        const mostFavoritedResponse =
+          await recipeService.getMostFavoritedRecipes();
         setMostFavoritedRecipes(mostFavoritedResponse.data);
 
         const topUsersResponse = await recipeService.getTopContributors();
@@ -102,12 +108,10 @@ export default function HomePage() {
     categorySliderRef.current?.slickGoTo(index);
   };
 
-  // Navigate to recipe detail page
   const handleRecipeClick = (recipeId) => {
     navigate(`/detail/${recipeId}`);
   };
 
-  // Navigate to user profile page
   const handleUserClick = (userId) => {
     navigate(`/user/${userId}`);
   };
@@ -116,10 +120,155 @@ export default function HomePage() {
     categoriesData.find((category) => category.category_id === selectedCategory)
       ?.recipes || [];
 
+  // Skeleton loading component for banner
+  const BannerSkeleton = () => (
+    <div className={styles.bannerWrapper}>
+      <Skeleton.Image
+        active
+        style={{ width: "100%", height: 400 }} // Adjust height to match banner
+      />
+      <div className={styles.bannerOverlay}>
+        <Skeleton.Input
+          active
+          size="large"
+          style={{ width: 300, marginBottom: 16 }}
+        />
+        <Skeleton.Input active size="small" style={{ width: 400 }} />
+      </div>
+    </div>
+  );
+
+  // Skeleton loading component for categories
+  const CategorySkeleton = () => (
+    <div className={styles.categoryWrapper}>
+      <Slider {...categorySettings} className={styles.categoryCarousel}>
+        {Array(5)
+          .fill()
+          .map((_, index) => (
+            <div key={index} className={styles.categoryItemWrapper}>
+              <Skeleton.Button
+                active
+                size="large"
+                shape="round"
+                style={{ width: 200, height: 40 }}
+              />
+            </div>
+          ))}
+      </Slider>
+    </div>
+  );
+
+  // Skeleton loading component for recipe carousel
+  const RecipeCarouselSkeleton = () => (
+    <div className={styles.carouselWrapper}>
+      <Slider {...recipeSettings} className={styles.carousel}>
+        {Array(3)
+          .fill()
+          .map((_, index) => (
+            <div key={index}>
+              <Card className={styles.recipeCard}>
+                <Skeleton.Image active style={{ width: 300, height: 200 }} />
+                <Card.Meta
+                  title={
+                    <Skeleton.Input
+                      active
+                      size="small"
+                      style={{ width: 150 }}
+                    />
+                  }
+                  description={
+                    <Skeleton.Input
+                      active
+                      size="small"
+                      style={{ width: 200 }}
+                    />
+                  }
+                />
+              </Card>
+            </div>
+          ))}
+      </Slider>
+    </div>
+  );
+
+  // Skeleton loading component for most favorited recipes
+  const MostFavoritedSkeleton = () => (
+    <div className={styles.trendingRecipesSection}>
+      <h2 className={`${styles.sectionTitle} ${styles.centeredSectionTitle}`}>
+        Most Favorited Recipes
+      </h2>
+      <div className={styles.trendingRecipesGrid}>
+        <Card className={styles.recipeCard}>
+          <Skeleton.Image active style={{ width: "100%", height: 450 }} />
+          <Card.Meta
+            title={
+              <Skeleton.Input active size="small" style={{ width: 150 }} />
+            }
+            description={
+              <Skeleton.Input active size="small" style={{ width: 200 }} />
+            }
+          />
+        </Card>
+        {Array(4)
+          .fill()
+          .map((_, index) => (
+            <Card key={index} className={styles.recipeCard}>
+              <Skeleton.Image active style={{ width: "100%", height: 200 }} />
+              <Card.Meta
+                title={
+                  <Skeleton.Input active size="small" style={{ width: 150 }} />
+                }
+                description={
+                  <Skeleton.Input active size="small" style={{ width: 200 }} />
+                }
+              />
+            </Card>
+          ))}
+      </div>
+    </div>
+  );
+
+  // Skeleton loading component for top users
+  const TopUsersSkeleton = () => (
+    <div className={styles.topUsersSection}>
+      <h2 className={`${styles.sectionTitle} ${styles.centeredSectionTitle}`}>
+        Top Users
+      </h2>
+      <div className={styles.topUsersGrid}>
+        {Array(3)
+          .fill()
+          .map((_, index) => (
+            <Card key={index} className={styles.userCard}>
+              <div className={styles.userCardContent}>
+                <Skeleton.Avatar active size={64} shape="circle" />
+                <div className={styles.userInfo}>
+                  <Skeleton.Input
+                    active
+                    size="small"
+                    style={{ width: 100, marginBottom: 8 }}
+                  />
+                  <Skeleton.Input active size="small" style={{ width: 150 }} />
+                  <Skeleton.Input
+                    active
+                    size="small"
+                    style={{ width: 80, marginTop: 8 }}
+                  />
+                </div>
+              </div>
+            </Card>
+          ))}
+      </div>
+    </div>
+  );
+
   if (loading) {
     return (
-      <div className={styles.loadingContainer}>
-        <Spin size="large" />
+      <div className={styles.homeContainer}>
+        <BannerSkeleton />
+        <CategorySkeleton />
+        <RecipeCarouselSkeleton />
+        <MostFavoritedSkeleton />
+        <TopUsersSkeleton />
       </div>
     );
   }
@@ -152,27 +301,37 @@ export default function HomePage() {
       {/* Main content */}
       <div className={styles.homeContainer}>
         <div className={styles.categoryWrapper}>
-          <Slider
-            {...categorySettings}
-            ref={categorySliderRef}
-            className={styles.categoryCarousel}
-          >
-            {categoriesData.map((category, index) => (
-              <div
-                key={category.category_id}
-                className={styles.categoryItemWrapper}
-                onClick={() => handleCategoryClick(category.category_id, index)}
-              >
-                <span
-                  className={`${styles.categoryItem} ${
-                    category.category_id === selectedCategory ? styles.active : ""
-                  }`}
+          {categoriesData.length > 0 ? (
+            <Slider
+              {...categorySettings}
+              ref={categorySliderRef}
+              className={styles.categoryCarousel}
+            >
+              {categoriesData.map((category, index) => (
+                <div
+                  key={category.category_id}
+                  className={styles.categoryItemWrapper}
+                  onClick={() =>
+                    handleCategoryClick(category.category_id, index)
+                  }
                 >
-                  {category.category_name}
-                </span>
-              </div>
-            ))}
-          </Slider>
+                  <span
+                    className={`${styles.categoryItem} ${
+                      category.category_id === selectedCategory
+                        ? styles.active
+                        : ""
+                    }`}
+                  >
+                    {category.category_name}
+                  </span>
+                </div>
+              ))}
+            </Slider>
+          ) : (
+            <p className={styles.noCategoriesMessage}>
+              No categories with recipes available.
+            </p>
+          )}
         </div>
 
         <div className={styles.carouselWrapper}>
@@ -212,23 +371,6 @@ export default function HomePage() {
           />
         </div>
         <br />
-        <h2 className={styles.sectionTitle}>Top Collection</h2>
-        <div className={styles.featuredCollection}>
-          <div className={styles.featuredImage}>
-            <img src="/images/recipes/macandcheese.jpg" alt="Mac and Cheese" />
-          </div>
-          <div className={styles.featuredText}>
-            <p className={styles.featuredLabel}>Collection</p>
-            <h2 className={styles.featuredTitle}>
-              32 Best Mac & Cheese Recipes
-            </h2>
-            <p className={styles.featuredDescription}>
-              Cheesy and oh so satisfying, mac and cheese can do no wrong.
-              Transport yourself back to childhood with one of these classic or
-              kicked-up options.
-            </p>
-          </div>
-        </div>
 
         {/* Most Favorited Recipes Section */}
         <div className={styles.trendingRecipesSection}>

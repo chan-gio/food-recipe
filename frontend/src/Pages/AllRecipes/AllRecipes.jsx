@@ -13,7 +13,6 @@ import {
 import { Link, useSearchParams } from "react-router-dom";
 import { recipeService } from "../../services/recipeService";
 import { categoryService } from "../../services/categoryService";
-import { ingredientService } from "../../services/ingredientService";
 import debounce from "lodash.debounce";
 import styles from "./AllRecipes.module.scss";
 
@@ -23,17 +22,15 @@ const { Option } = Select;
 const AllRecipes = () => {
   const [recipes, setRecipes] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [ingredients, setIngredients] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 10,
+    pageSize: 12,
     total: 0,
   });
   const [filters, setFilters] = useState({
     search: "",
     category: [],
-    ingredient: [],
   });
   const [searchInput, setSearchInput] = useState("");
   const [searchParams, setSearchParams] = useSearchParams();
@@ -46,26 +43,12 @@ const AllRecipes = () => {
     setPagination((prev) => ({ ...prev, current: 1 }));
   }, [searchParams]);
 
-  // Fetch categories and ingredients on mount
+  // Fetch categories on mount
   useEffect(() => {
     const fetchFilters = async () => {
       try {
         const categoryData = await categoryService.getCategories();
-        const ingredientData = await ingredientService.getIngredients();
-
-        // Loại bỏ ingredients trùng lặp dựa trên ingredient_name
-        const uniqueIngredients = [];
-        const seenNames = new Set();
-        (ingredientData.data || []).forEach((ingredient) => {
-          const nameLower = ingredient.ingredient_name.toLowerCase();
-          if (!seenNames.has(nameLower)) {
-            seenNames.add(nameLower);
-            uniqueIngredients.push(ingredient);
-          }
-        });
-
         setCategories(categoryData.data || []);
-        setIngredients(uniqueIngredients);
       } catch (error) {
         console.error("Error fetching filters:", error);
       }
@@ -84,15 +67,10 @@ const AllRecipes = () => {
             page: pagination.current,
             limit: pagination.pageSize,
           });
-        } else if (
-          filters.category.length > 0 ||
-          filters.ingredient.length > 0
-        ) {
+        } else if (filters.category.length > 0) {
           response = await recipeService.filterRecipes({
             categoryIds:
               filters.category.length > 0 ? filters.category : undefined,
-            ingredientIds:
-              filters.ingredient.length > 0 ? filters.ingredient : undefined,
             page: pagination.current,
             limit: pagination.pageSize,
           });
@@ -145,11 +123,6 @@ const AllRecipes = () => {
 
   const handleCategoryChange = (value) => {
     setFilters((prev) => ({ ...prev, category: value }));
-    setPagination((prev) => ({ ...prev, current: 1 }));
-  };
-
-  const handleIngredientChange = (value) => {
-    setFilters((prev) => ({ ...prev, ingredient: value }));
     setPagination((prev) => ({ ...prev, current: 1 }));
   };
 
@@ -212,26 +185,6 @@ const AllRecipes = () => {
                 ))}
               </Select>
             </div>
-            <div className={styles.filterSection}>
-              <h3>Ingredients</h3>
-              <Select
-                mode="multiple"
-                placeholder="Select ingredients"
-                onChange={handleIngredientChange}
-                value={filters.ingredient}
-                className={styles.selectInput}
-                allowClear
-              >
-                {ingredients.map((ingredient) => (
-                  <Option
-                    key={ingredient.ingredient_id}
-                    value={ingredient.ingredient_id}
-                  >
-                    {ingredient.ingredient_name}
-                  </Option>
-                ))}
-              </Select>
-            </div>
           </div>
         </Col>
 
@@ -283,6 +236,7 @@ const AllRecipes = () => {
                   onChange={handlePaginationChange}
                   className={styles.pagination}
                   showSizeChanger
+                  pageSizeOptions={[12, 24, 36]}
                 />
               </>
             )}

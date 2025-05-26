@@ -1,102 +1,167 @@
 .container {
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
+  display: flex;
+  padding-top: 20px;
+  background: #f5f5f5; /* Changed to white for a cleaner look */
+  flex-direction: column;
+  align-items: center;
 }
 
 .header {
   display: flex;
+  padding: 48px; 
+  flex-direction: column;
   align-items: center;
-  margin-bottom: 40px;
-
+  text-align: center;
+  min-width: 150px;
+  min-height: 100px;
   .avatar {
-    margin-right: 20px;
+    margin-bottom: 24px; /* More space below avatar */
+    min-width: 10px; /* Slightly larger avatar */
+    min-height: 100px;
+    border: 4px solid #ffffff; /* White border for prominence */
+    border-radius: 50%; /* Ensure circular shape */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Subtle ring shadow */
+    transition: transform 0.3s ease;
+
+    &:hover {
+      transform: scale(1.05); /* Slight zoom on hover */
+    }
   }
 
   .userInfo {
     .username {
-      font-size: 24px;
-      font-weight: bold;
-      color: #333;
-      margin-bottom: 5px;
-    }
-
-    .bio {
-      font-size: 16px;
-      color: #666;
+      font-size: 30px; /* Slightly larger for emphasis */
+      font-weight: 700; /* Bolder weight */
+      color: #2d3748; /* Darker, modern gray */
+      margin-bottom: 10px;
+      letter-spacing: 0.5px; /* Better readability */
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* Subtle depth */
     }
   }
 }
 
 .tabs {
+  width: 100%;
+  background: #ffffff;
+  padding: 48px; /* More padding for comfort */
+  margin: 32px auto; /* Centered with balanced margin */
+  max-width: 1100px;
+  border: 1px solid #e8ecef; /* Softer border color */
+  border-radius: 16px; /* Softer corners */
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06); /* Lighter shadow */
+  transition: all 0.3s ease;
+
   .recipeList {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Wider cards */
+    gap: 40px; /* More spacing between cards */
+    justify-items: center;
   }
 
   .recipeItem {
-    border-radius: 10px;
+    border-radius: 16px; /* Softer corners */
     overflow: hidden;
-    background: #fff;
+    background: #ffffff;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     cursor: pointer;
+    width: 300px; /* Slightly wider for balance */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Softer shadow */
+    display: flex;
+    flex-direction: column;
 
     &:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transform: translateY(-6px); /* Smoother lift */
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); /* Deeper shadow on hover */
     }
 
     .recipeImage {
       width: 100%;
-      height: 200px;
+      height: 220px; /* Slightly taller for better visuals */
       object-fit: cover;
+      background: linear-gradient(135deg, #e8ecef, #f1f3f5); /* Gradient placeholder */
     }
 
     .recipeContent {
-      padding: 15px;
+      padding: 24px; /* More padding for comfort */
+      text-align: center;
+      flex-grow: 1;
 
       .recipeTitle {
-        font-size: 18px;
-        margin-bottom: 10px;
-        color: #333;
+        font-size: 22px; /* Larger for emphasis */
+        font-weight: 600; /* Modern weight */
+        margin-bottom: 14px;
+        color: #2d3748; /* Darker gray */
+        letter-spacing: 0.3px;
       }
 
       .recipeMeta {
         display: flex;
+        justify-content: center;
         align-items: center;
+        gap: 12px;
 
         .recipeRating {
-          margin-right: 10px;
+          margin-right: 8px;
+          color: #ff6b6b; /* Accent color for stars */
         }
 
         .reviewCount {
-          font-size: 14px;
-          color: #666;
+          font-size: 15px; /* Slightly larger */
+          color: #718096; /* Softer gray */
+          font-weight: 500;
         }
       }
     }
   }
 
   .reviewList {
-    .review {
-      margin-bottom: 20px;
-      padding: 15px;
-      border: 1px solid #e8e8e8;
-      border-radius: 8px;
+    max-width: 900px; /* Wider for better readability */
+    margin: 0 auto;
 
-      .reviewRecipe {
-        font-size: 18px;
-        margin-bottom: 5px;
+    .review {
+      margin-bottom: 32px; /* More spacing */
+      padding: 24px; /* More padding */
+      border: 1px solid #e8ecef; /* Softer border */
+      border-radius: 12px; /* Softer corners */
+      background: #ffffff;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06); /* Subtle shadow */
+      transition: transform 0.3s ease;
+
+      &:hover {
+        transform: translateY(-4px); /* Slight lift on hover */
       }
 
-      .reviewRating {
+      .reviewRecipe {
+        font-size: 22px; /* Larger for emphasis */
+        font-weight: 600;
         margin-bottom: 10px;
+        color: #2d3748;
+      }
+
+      .reviewMeta {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 14px;
+
+        .reviewRating {
+          margin-bottom: 0;
+          color: #ff6b6b; /* Accent color */
+        }
+
+        .reviewTime {
+          font-size: 15px; /* Slightly larger */
+          color: #718096; /* Softer gray */
+          font-weight: 500;
+        }
       }
 
       .reviewContent {
-        font-size: 14px;
-        color: #666;
+        font-size: 16px; /* Larger for readability */
+        color: #4a5568; /* Darker gray */
+        line-height: 1.7; /* More line spacing */
       }
     }
   }
@@ -107,15 +172,22 @@
   justify-content: center;
   align-items: center;
   height: 100vh;
+  background: #f5f5f5;
 }
 
 .errorContainer {
   max-width: 600px;
-  margin: 20px auto;
+  margin: 60px auto; /* More margin for balance */
+  padding: 24px;
+  text-align: center;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .reviewAuthor {
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 8px;
+  font-size: 15px; /* Slightly larger */
+  color: #718096; /* Softer gray */
+  margin-bottom: 10px;
+  font-weight: 500;
 }

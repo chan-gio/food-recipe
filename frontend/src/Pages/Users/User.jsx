@@ -9,20 +9,22 @@ import { reviewService } from "../../services/reviewService.jsx";
 
 // Helper function to calculate time difference
 const getTimeAgo = (createdAt) => {
-  const now = new Date("2025-05-25T00:01:00+07:00"); // Current date and time
+  const now = new Date("2025-05-26T19:42:00+07:00"); // Updated to current date and time
   const reviewDate = new Date(createdAt);
-  const diffInMs = now - reviewDate; // Difference in milliseconds
-  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60)); // Difference in hours
+  const diffInMs = now - reviewDate;
+  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
 
   if (diffInHours < 1) {
     const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-    return diffInMinutes <= 1 ? "just now" : `${diffInMinutes} minutes ago`;
+    return diffInMinutes <= 0
+      ? "just now"
+      : `${diffInMinutes} minute${diffInMinutes !== 1 ? "s" : ""} ago`;
   }
   if (diffInHours < 24) {
-    return diffInHours === 1 ? "1 hour ago" : `${diffInHours} hours ago`;
+    return `${diffInHours} hour${diffInHours !== 1 ? "s" : ""} ago`;
   }
   const diffInDays = Math.floor(diffInHours / 24);
-  return diffInDays === 1 ? "1 day ago" : `${diffInDays} days ago`;
+  return `${diffInDays} day${diffInDays !== 1 ? "s" : ""} ago`;
 };
 
 const User = () => {
@@ -43,10 +45,16 @@ const User = () => {
         const userResponse = await userService.getUserById(id);
         setUser(userResponse.data);
 
-        const recipesResponse = await recipeService.getRecipesByUserId(id, { page: 1, limit: 10 });
+        const recipesResponse = await recipeService.getRecipesByUserId(id, {
+          page: 1,
+          limit: 10,
+        });
         setRecipes(recipesResponse.data);
 
-        const reviewsResponse = await reviewService.getReviewsByUserId(id, { page: 1, limit: 10 });
+        const reviewsResponse = await reviewService.getReviewsByUserId(id, {
+          page: 1,
+          limit: 10,
+        });
         setReviews(reviewsResponse.data);
       } catch (err) {
         setError(err.message || "Failed to fetch data");
@@ -96,22 +104,15 @@ const User = () => {
                 onClick={() => handleRecipeClick(recipe.recipe_id)}
               >
                 <img
-                  src={recipe.images[0] || "https://via.placeholder.com/300x200"}
+                  src={
+                    recipe.images[0] ||
+                    "https://via.placeholder.com/300x220?text=No+Image"
+                  }
                   alt={recipe.recipe_name}
                   className={styles.recipeImage}
                 />
                 <div className={styles.recipeContent}>
                   <h3 className={styles.recipeTitle}>{recipe.recipe_name}</h3>
-                  <div className={styles.recipeMeta}>
-                    <Rate
-                      disabled
-                      defaultValue={recipe.averageRating || 0}
-                      className={styles.recipeRating}
-                    />
-                    <span className={styles.reviewCount}>
-                      ({recipe.reviews?.length || 0})
-                    </span>
-                  </div>
                 </div>
               </div>
             ))
@@ -131,16 +132,17 @@ const User = () => {
               <div key={review.review_id} className={styles.review}>
                 <h3 className={styles.reviewRecipe}>{review.recipe_name}</h3>
                 <div className={styles.reviewMeta}>
-                  <Rate
-                    disabled
-                    defaultValue={review.rating || 0}
-                    className={styles.reviewRating}
-                  />
-                  <span className={styles.reviewTime}>
-                    {getTimeAgo(review.created_at)}
-                  </span>
+                  {review.rating && (
+                    <Rate
+                      disabled
+                      defaultValue={review.rating || 0}
+                      className={styles.reviewRating}
+                    />
+                  )}
                 </div>
-                <p className={styles.reviewContent}>{review.content || "No content provided."}</p>
+                <p className={styles.reviewComment}>
+                  {review.comment || "No comment provided."}
+                </p>
               </div>
             ))
           ) : (
@@ -155,16 +157,15 @@ const User = () => {
     <div className={styles.container}>
       <div className={styles.header}>
         <Avatar
-          size={100}
+          size={120}
           src={user.profile_picture}
           icon={<UserOutlined />}
           className={styles.avatar}
         />
         <div className={styles.userInfo}>
-          <h1 className={styles.username}>{user.full_name || user.signin_account || "User"}</h1>
-          <p className={styles.bio}>
-            {user.bio || "This user hasn't added a bio yet."}
-          </p>
+          <h1 className={styles.username}>
+            {user.full_name || user.signin_account || "User"}
+          </h1>
         </div>
       </div>
 
