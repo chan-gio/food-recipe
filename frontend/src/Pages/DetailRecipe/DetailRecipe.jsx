@@ -504,8 +504,14 @@ const DetailRecipe = () => {
                   </video>
                 ))}
               </div>
+            ) : (
+              <img
+                src="https://via.placeholder.com/600x400"
+                alt="Placeholder"
+                className={styles.mainImage}
+              />
             )}
-          </div>
+          
           <Divider className={styles.divider} />
         </div>
 
@@ -723,6 +729,7 @@ const DetailRecipe = () => {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };
