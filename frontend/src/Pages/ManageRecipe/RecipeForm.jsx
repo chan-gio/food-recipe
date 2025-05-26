@@ -786,10 +786,6 @@ const RecipeForm = () => {
             <div className={styles.infoItem}>
               <span className={styles.infoLabel}>
                 🕒 Ready in: 
-                <Form.Item name="prep_time" noStyle>
-                  <InputNumber min={0} className={styles.infoInput} />
-                </Form.Item>
-                +
                 <Form.Item name="cook_time" noStyle>
                   <InputNumber min={0} className={styles.infoInput} />
                 </Form.Item>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import styles from "./ProfilePage.module.scss";
-import { Button, Card, Input, List, Pagination } from "antd";
-import { Link, NavLink } from "react-router-dom";
+import { Button, Card, Input, List, Pagination, Spin, Skeleton } from "antd";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { recipeService } from "../../services/recipeService";
 import { favoriteService } from "../../services/favoriteService";
 import { reviewService } from "../../services/reviewService";
@@ -9,7 +9,8 @@ import { userService } from "../../services/userService";
 import useAuth from "../../utils/auth";
 
 const ProfilePage = () => {
-  const { isAuthenticated, userId } = useAuth();
+  const { isAuthenticated, userId, logout, isLoading } = useAuth();
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState("profile");
   const [recipes, setRecipes] = useState([]);
   const [favorites, setFavorites] = useState([]);
@@ -29,16 +30,21 @@ const ProfilePage = () => {
   const fileInputRef = useRef(null);
   const limit = 5;
 
-  // State for editable profile fields
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [originalProfile, setOriginalProfile] = useState(null); // Store original profile data
+  const [originalProfile, setOriginalProfile] = useState(null);
 
-  // Fetch user-specific data
   useEffect(() => {
-    if (!isAuthenticated || !userId) return;
+    if (isLoading) return;
+    if (!isAuthenticated) {
+      navigate('/login');
+    }
+  }, [isAuthenticated, isLoading, navigate]);
+
+  useEffect(() => {
+    if (isLoading || !isAuthenticated || !userId) return;
 
     const fetchProfile = async () => {
       setProfileLoading(true);
@@ -46,9 +52,8 @@ const ProfilePage = () => {
         const response = await userService.getUserById(userId);
         const userProfile = response.data;
         setProfile(userProfile);
-        setOriginalProfile(userProfile); // Store original profile for comparison
+        setOriginalProfile(userProfile);
 
-        // Initialize editable fields
         const [fName, lName] = userProfile.full_name
           ? userProfile.full_name.split(" ")
           : ["", ""];
@@ -126,6 +131,7 @@ const ProfilePage = () => {
     commentPage,
     isAuthenticated,
     userId,
+    isLoading,
   ]);
 
   const handleDeleteRecipe = async (id) => {
@@ -180,14 +186,12 @@ const ProfilePage = () => {
   };
 
   const handleSaveProfile = async () => {
-    // Construct full_name and handle empty fields
     const fullName = `${firstName} ${lastName}`.trim();
     const userData = {
-      full_name: fullName || undefined, // Send undefined if empty to clear the field
-      email: email || undefined, // Send undefined if empty to clear the field
+      full_name: fullName || undefined,
+      email: email || undefined,
     };
 
-    // Check if there are actual changes
     const originalFullName = originalProfile?.full_name || "";
     const originalEmail = originalProfile?.email || "";
     const hasChanges =
@@ -203,7 +207,7 @@ const ProfilePage = () => {
     try {
       const response = await userService.updateUser(userId, userData, null);
       setProfile(response.data);
-      setOriginalProfile(response.data); // Update original profile after save
+      setOriginalProfile(response.data);
       setIsEditingProfile(false);
       setError("");
     } catch (err) {
@@ -216,6 +220,10 @@ const ProfilePage = () => {
     setError("");
   };
 
+  const handleLogout = () => {
+    logout();
+  };
+
   const renderSection = () => {
     switch (activeSection) {
       case "profile":
@@ -224,7 +232,11 @@ const ProfilePage = () => {
             <h2>Profile</h2>
             {error && <p style={{ color: "red" }}>{error}</p>}
             {profileLoading ? (
-              <p>Loading...</p>
+              <div className={styles.skeletonProfileSection}>
+                <Skeleton.Input active style={{ width: "100%", marginBottom: "16px" }} />
+                <Skeleton.Input active style={{ width: "100%", marginBottom: "16px" }} />
+                <Skeleton.Button active block style={{ marginTop: "16px" }} />
+              </div>
             ) : !profile ? (
               <p>No profile data available</p>
             ) : (
@@ -279,7 +291,12 @@ const ProfilePage = () => {
             <h2>My Recipes</h2>
             {error && <p style={{ color: "red" }}>{error}</p>}
             {recipesLoading ? (
-              <p>Loading...</p>
+              <div className={styles.skeletonMyRecipesSection}>
+                <Skeleton active title={{ width: "20%" }} paragraph={false} />
+                <Skeleton active paragraph={{ rows: 2, width: ["80%", "60%"] }} />
+                <Skeleton active paragraph={{ rows: 2, width: ["80%", "60%"] }} />
+                <Skeleton.Button active block style={{ marginTop: "16px" }} />
+              </div>
             ) : recipes.length === 0 ? (
               <p>No recipes available</p>
             ) : (
@@ -291,6 +308,9 @@ const ProfilePage = () => {
                       <p>{recipe.description}</p>
                     </div>
                     <div className={styles.recipeActions}>
+                      <Link to={`/detail/${recipe.recipe_id}`}>
+                        <Button className={styles.viewButton}>View</Button>
+                      </Link>
                       <Link to={`/recipeform/${recipe.recipe_id}`}>
                         <Button className={styles.editButton}>Edit</Button>
                       </Link>
@@ -328,7 +348,11 @@ const ProfilePage = () => {
             <h2>Favorite Recipes</h2>
             {error && <p style={{ color: "red" }}>{error}</p>}
             {favoritesLoading ? (
-              <p>Loading...</p>
+              <div className={styles.skeletonFavoriteRecipesSection}>
+                <Skeleton active title={{ width: "20%" }} paragraph={false} />
+                <Skeleton active paragraph={{ rows: 2, width: ["80%", "60%"] }} />
+                <Skeleton active paragraph={{ rows: 2, width: ["80%", "60%"] }} />
+              </div>
             ) : favorites.length === 0 ? (
               <p>No favorite recipes available</p>
             ) : (
@@ -372,7 +396,19 @@ const ProfilePage = () => {
             <h2>Your Comments</h2>
             {error && <p style={{ color: "red" }}>{error}</p>}
             {commentsLoading ? (
-              <p>Loading...</p>
+              <div className={styles.skeletonCommentsSection}>
+                <Skeleton active title={{ width: "20%" }} paragraph={false} />
+                <Skeleton
+                  active
+                  avatar
+                  paragraph={{ rows: 1, width: ["60%"] }}
+                />
+                <Skeleton
+                  active
+                  avatar
+                  paragraph={{ rows: 1, width: ["60%"] }}
+                />
+              </div>
             ) : comments.length === 0 ? (
               <p>No comments available</p>
             ) : (
@@ -420,12 +456,28 @@ const ProfilePage = () => {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className={styles.loadingContainer}>
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
     <div className={styles.profilePage}>
       <div className={styles.sidebar}>
         <Card className={styles.profileCard}>
           {profileLoading ? (
-            <p>Loading...</p>
+            <div className={styles.skeletonProfileCard}>
+              <Skeleton.Avatar active size={100} shape="circle" />
+              <Skeleton active title={{ width: "50%" }} paragraph={false} style={{ marginTop: "16px" }} />
+              <Skeleton active paragraph={{ rows: 1, width: ["30%"] }} />
+            </div>
           ) : !profile ? (
             <p>No profile data</p>
           ) : (
@@ -498,6 +550,13 @@ const ProfilePage = () => {
           >
             Your Comments
           </NavLink>
+          <Button
+            danger
+            className={styles.logoutButton}
+            onClick={handleLogout}
+          >
+            Logout
+          </Button>
         </div>
       </div>
       <div className={styles.mainContent}>{renderSection()}</div>

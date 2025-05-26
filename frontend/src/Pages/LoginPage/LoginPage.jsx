@@ -5,12 +5,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { loginService } from "../../services/loginService";
 import { userService } from "../../services/userService";
 import { useNavigate } from "react-router-dom";
+import useAuth from "../../utils/auth";
 
 const Login = () => {
+  const { login } = useAuth();
   const [isRegistering, setIsRegistering] = useState(false);
   const [signinAccount, setSigninAccount] = useState("");
   const [email, setEmail] = useState("");
-  const [fullName, setFullName] = useState(""); 
+  const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
@@ -20,7 +22,7 @@ const Login = () => {
     setIsRegistering(!isRegistering);
     setSigninAccount("");
     setEmail("");
-    setFullName(""); 
+    setFullName("");
     setPassword("");
     setConfirmPassword("");
     setError("");
@@ -29,8 +31,26 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      await loginService.login({ signin_account: signinAccount, password });
-      navigate("/"); 
+      // Call login API
+      const loginResponse = await loginService.login({ signin_account: signinAccount, password });
+      
+      // Extract access_token and user_id from response
+      const { access_token, user_id } = loginResponse.data;
+      
+      // Fetch user info to get role (assuming login API doesn't return role)
+      const userResponse = await userService.getUserById(user_id);
+      const user = userResponse.data;
+      const role = user.role;
+
+      // Store token, userId, and role using useAuth
+      login(access_token, user_id, role);
+
+      // Redirect based on role
+      if (role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
     } catch (err) {
       setError(err.message);
     }
@@ -47,18 +67,42 @@ const Login = () => {
       return;
     }
     try {
+      // Register the user
       await userService.register({
         signin_account: signinAccount,
         password,
         email,
-        full_name: fullName, 
-        role: "user",
+        full_name: fullName,
+        role: "user", // Default role for registration
       });
-      await loginService.login({ signin_account: signinAccount, password });
-      navigate("/"); 
+
+      // Log in the user after registration
+      const loginResponse = await loginService.login({ signin_account: signinAccount, password });
+      
+      // Extract access_token and user_id from response
+      const { access_token, user_id } = loginResponse.data;
+      
+      // Fetch user info to get role
+      const userResponse = await userService.getUserById(user_id);
+      const user = userResponse.data;
+      const role = user.role;
+
+      // Store token, userId, and role using useAuth
+      login(access_token, user_id, role);
+
+      // Redirect based on role
+      if (role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
     } catch (err) {
       setError(err.message);
     }
+  };
+
+  const handleClose = () => {
+    navigate("/"); // Redirect to home page
   };
 
   return (
@@ -71,6 +115,15 @@ const Login = () => {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -50 }}
         >
+          {/* Close Button (X) */}
+          <button
+            className={styles.closeButton}
+            onClick={handleClose}
+            aria-label="Close"
+          >
+            ✕
+          </button>
+
           <h1 className={styles.logo}>allrecipes</h1>
           <h2 className={styles.title}>
             {isRegistering ? "Sign up" : "Log in"}
@@ -131,23 +184,6 @@ const Login = () => {
           >
             {isRegistering ? "Sign up" : "Log in"}
           </motion.button>
-
-          {!isRegistering && (
-            <>
-              <motion.button
-                className={styles.facebookBtn}
-                whileHover={{ scale: 1.1 }}
-              >
-                <FaFacebook /> Log in with Facebook
-              </motion.button>
-              <motion.button
-                className={styles.googleBtn}
-                whileHover={{ scale: 1.1 }}
-              >
-                <FaGoogle /> Log in with Google
-              </motion.button>
-            </>
-          )}
 
           {error && <p style={{ color: 'red' }}>{error}</p>}
 

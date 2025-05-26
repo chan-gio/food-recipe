@@ -452,3 +452,163 @@
   border-radius: 8px;
   resize: vertical;
 }
+
+@media print {
+  @page {
+    margin: 0; /* Xóa margin mặc định của trang in */
+    size: auto; /* Đảm bảo kích thước trang phù hợp */
+  }
+
+  /* Ẩn header và footer mặc định của trình duyệt */
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
+  .nonPrintableSection {
+    display: none; /* Ẩn các phần không cần in */
+  }
+
+  .printableSection {
+    display: block; /* Đảm bảo các phần cần in được hiển thị */
+    padding: 20mm; /* Thêm padding để bản in thoáng */
+  }
+
+  .container {
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    background: none; /* Bỏ background khi in */
+  }
+
+  .printHeader {
+    margin-bottom: 20px;
+  }
+
+  .printTitle {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #000;
+  }
+
+  .printAuthor {
+    font-size: 1rem;
+    font-style: italic;
+    color: #555;
+    margin-bottom: 10px;
+  }
+
+  .infoSection {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  .infoItem {
+    flex: 0 0 auto;
+  }
+
+  .servingControls {
+    display: none; /* Ẩn các nút tăng/giảm servings khi in */
+  }
+
+  .recipeDetails {
+    display: flex;
+    gap: 40px;
+  }
+
+  .directions,
+  .ingredients {
+    flex: 1;
+  }
+
+  .sectionTitle {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #000;
+  }
+
+  .directionList,
+  .ingredientList {
+    padding-left: 20px;
+    font-size: 1rem;
+    color: #000;
+  }
+
+  .divider {
+    border-top: 1px solid #000; /* Đường kẻ đen đơn giản khi in */
+    margin: 20px 0;
+  }
+}
+
+.downloadableSection {
+  display: none; /* Ẩn downloadableSection trong giao diện thông thường */
+  background: #ffffff !important;
+  color: #000000 !important;
+  padding: 20mm;
+}
+
+.printHeader {
+  margin-bottom: 20px;
+}
+
+.printTitle {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #000000 !important;
+}
+
+.printAuthor {
+  font-size: 1rem;
+  font-style: italic;
+  color: #555555 !important;
+  margin-bottom: 10px;
+}
+
+.infoSection {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.infoItem {
+  flex: 0 0 auto;
+}
+
+.servingControls {
+  display: none; /* Ẩn các nút tăng/giảm servings trong PDF */
+}
+
+.recipeDetails {
+  display: flex;
+  gap: 40px;
+}
+
+.directions,
+.ingredients {
+  flex: 1;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #000000 !important;
+}
+
+.directionList,
+.ingredientList {
+  padding-left: 20px;
+  font-size: 1rem;
+  color: #000000 !important;
+}
+
+.divider {
+  border-top: 1px solid #000000 !important;
+  margin: 20px 0;
+}
